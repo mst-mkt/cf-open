@@ -14,6 +14,7 @@ import (
 var (
 	wranglerConfigPath string
 	accountID          string
+	openAll            bool
 )
 
 var rootCmd = &cobra.Command{
@@ -32,6 +33,14 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("no resources found in wrangler config")
 		}
 
+		if openAll {
+			urls := make([]string, len(resources))
+			for i, r := range resources {
+				urls[i] = r.URL
+			}
+			return internal.OpenURLs(urls)
+		}
+
 		selectedResource, err := internal.SelectResource(resources)
 		if err != nil {
 			return fmt.Errorf("failed to select resource: %w", err)
@@ -44,6 +53,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	rootCmd.Flags().StringVar(&wranglerConfigPath, "wrangler-config", "", "Path to wrangler configuration file")
 	rootCmd.Flags().StringVar(&accountID, "account-id", "", "Cloudflare account ID")
+	rootCmd.Flags().BoolVarP(&openAll, "all", "a", false, "Open all resources in the browser")
 }
 
 func main() {

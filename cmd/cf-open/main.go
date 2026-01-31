@@ -14,7 +14,8 @@ import (
 var wranglerConfigPath string
 
 var rootCmd = &cobra.Command{
-	Use: "cf-open",
+	Use:   "cf-open",
+	Short: "Open Cloudflare dashboard for your project from CLI",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		wranglerConfig, err := config.LoadWranglerConfig(wranglerConfigPath)
 		if err != nil {

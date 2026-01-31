@@ -29,13 +29,13 @@ If there is only one resource, it will open directly.
 
 ### Options
 
-| Option              | Description                                                               |
-| ------------------- | ------------------------------------------------------------------------- |
-| `--wrangler-config` | Path to the wrangler configuration file. Supports JSONC and TOML formats. |
-| `--account-id`      | Cloudflare account ID                                                     |
-| `-a`, `--all`       | Open all resources in the browser                                         |
-| `-p`, `--print`     | Print URL to stdout instead of opening in browser                         |
-| `-v`, `--version`   | Print the version number                                                  |
+| Option                    | Description                                                               |
+| ------------------------- | ------------------------------------------------------------------------- |
+| `-c`, `--wrangler-config` | Path to the wrangler configuration file. Supports JSONC and TOML formats. |
+| `--account-id`            | Cloudflare account ID                                                     |
+| `-a`, `--all`             | Open all resources in the browser                                         |
+| `-p`, `--print`           | Print URL to stdout instead of opening in browser                         |
+| `-v`, `--version`         | Print the version number                                                  |
 
 ## Supported Resources
 

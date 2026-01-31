@@ -83,7 +83,7 @@ func outputURLs(urls []string, printOnly bool) error {
 }
 
 func init() {
-	rootCmd.Flags().StringVar(&opts.wranglerConfig, "wrangler-config", "", "Path to wrangler configuration file")
+	rootCmd.Flags().StringVarP(&opts.wranglerConfig, "wrangler-config", "c", "", "Path to wrangler configuration file")
 	rootCmd.Flags().StringVar(&opts.accountID, "account-id", "", "Cloudflare account ID")
 	rootCmd.Flags().BoolVarP(&opts.all, "all", "a", false, "Open all resources in the browser")
 	rootCmd.Flags().BoolVarP(&opts.print, "print", "p", false, "Print URL to stdout instead of opening in browser")

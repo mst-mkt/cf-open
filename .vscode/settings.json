@@ -1,0 +1,21 @@
+{
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "files.trimFinalNewlines": true,
+  "files.eol": "\n",
+  "[go]": {
+    "editor.insertSpaces": false,
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "golang.go",
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    }
+  },
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": [
+    "--config=${workspaceFolder}/.golangci.toml",
+    "--fast"
+  ],
+}

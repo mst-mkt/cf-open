@@ -17,9 +17,12 @@ var (
 	openAll            bool
 )
 
+var version = "dev"
+
 var rootCmd = &cobra.Command{
-	Use:   "cf-open",
-	Short: "Open Cloudflare dashboard for your project from CLI",
+	Use:     "cf-open",
+	Short:   "Open Cloudflare dashboard for your project from CLI",
+	Version: version,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		wranglerConfig, err := config.LoadWranglerConfig(wranglerConfigPath)
 		if err != nil {

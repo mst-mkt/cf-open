@@ -32,6 +32,7 @@ If there is only one resource, it will open directly.
 | Option              | Description                                                               |
 | ------------------- | ------------------------------------------------------------------------- |
 | `--wrangler-config` | Path to the wrangler configuration file. Supports JSONC and TOML formats. |
+| `--account-id`      | Cloudflare account ID                                                     |
 
 ## Supported Resources
 

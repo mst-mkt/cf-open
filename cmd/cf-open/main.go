@@ -11,7 +11,10 @@ import (
 	"github.com/mst-mkt/cf-open/internal/config"
 )
 
-var wranglerConfigPath string
+var (
+	wranglerConfigPath string
+	accountID          string
+)
 
 var rootCmd = &cobra.Command{
 	Use:   "cf-open",
@@ -22,9 +25,9 @@ var rootCmd = &cobra.Command{
 			return fmt.Errorf("failed to load wrangler config: %w", err)
 		}
 
-		accountID, hasAccount := config.GetAccountID(wranglerConfig)
+		resolvedAccountID, hasAccount := config.GetAccountID(wranglerConfig, accountID)
 
-		resources := cloudflare.GetResourcesFromConfig(wranglerConfig, accountID, hasAccount)
+		resources := cloudflare.GetResourcesFromConfig(wranglerConfig, resolvedAccountID, hasAccount)
 		if len(resources) == 0 {
 			return fmt.Errorf("no resources found in wrangler config")
 		}
@@ -40,6 +43,7 @@ var rootCmd = &cobra.Command{
 
 func init() {
 	rootCmd.Flags().StringVar(&wranglerConfigPath, "wrangler-config", "", "Path to wrangler configuration file")
+	rootCmd.Flags().StringVar(&accountID, "account-id", "", "Cloudflare account ID")
 }
 
 func main() {

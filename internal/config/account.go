@@ -14,7 +14,11 @@ type AccountInfo struct {
 	} `json:"account"`
 }
 
-func GetAccountID(config *WranglerConfig) (string, bool) {
+func GetAccountID(config *WranglerConfig, flagAccountID string) (string, bool) {
+	if flagAccountID != "" {
+		return flagAccountID, true
+	}
+
 	if config.AccountID != "" {
 		return config.AccountID, true
 	}

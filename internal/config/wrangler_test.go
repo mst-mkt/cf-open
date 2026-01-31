@@ -11,6 +11,7 @@ func TestLoadWranglerConfig(t *testing.T) {
 
 	tests := []struct {
 		name        string
+		filename    string
 		content     string
 		wantName    string
 		wantKVCount int
@@ -19,7 +20,8 @@ func TestLoadWranglerConfig(t *testing.T) {
 		wantErr     bool
 	}{
 		{
-			name: "有効な JSON 設定",
+			name:     "有効な JSON 設定",
+			filename: "wrangler.json",
 			content: `{
 				"name": "my-worker",
 				"account_id": "abc123",
@@ -29,7 +31,8 @@ func TestLoadWranglerConfig(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name: "コメント付き JSONC",
+			name:     "コメント付き JSONC",
+			filename: "wrangler.jsonc",
 			content: `{
 				// This is a comment
 				"name": "worker-with-comment",
@@ -39,7 +42,66 @@ func TestLoadWranglerConfig(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name: "KV namespace を含む設定",
+			name:     "有効な TOML 設定",
+			filename: "wrangler.toml",
+			content: `
+name = "toml-worker"
+account_id = "abc123"
+compatibility_date = "2024-01-01"
+`,
+			wantName: "toml-worker",
+			wantErr:  false,
+		},
+		{
+			name:     "TOML で KV namespace を含む設定",
+			filename: "wrangler.toml",
+			content: `
+name = "kv-toml-worker"
+
+[[kv_namespaces]]
+binding = "KV1"
+id = "kv-id-1"
+
+[[kv_namespaces]]
+binding = "KV2"
+id = "kv-id-2"
+`,
+			wantName:    "kv-toml-worker",
+			wantKVCount: 2,
+			wantErr:     false,
+		},
+		{
+			name:     "TOML で D1 データベースを含む設定",
+			filename: "wrangler.toml",
+			content: `
+name = "d1-toml-worker"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "test-db"
+database_id = "db-123"
+`,
+			wantName:    "d1-toml-worker",
+			wantD1Count: 1,
+			wantErr:     false,
+		},
+		{
+			name:     "TOML で R2 バケットを含む設定",
+			filename: "wrangler.toml",
+			content: `
+name = "r2-toml-worker"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "my-bucket"
+`,
+			wantName:    "r2-toml-worker",
+			wantR2Count: 1,
+			wantErr:     false,
+		},
+		{
+			name:     "JSON で KV namespace を含む設定",
+			filename: "wrangler.json",
 			content: `{
 				"name": "kv-worker",
 				"kv_namespaces": [
@@ -52,7 +114,8 @@ func TestLoadWranglerConfig(t *testing.T) {
 			wantErr:     false,
 		},
 		{
-			name: "D1 データベースを含む設定",
+			name:     "JSON で D1 データベースを含む設定",
+			filename: "wrangler.json",
 			content: `{
 				"name": "d1-worker",
 				"d1_databases": [
@@ -64,7 +127,8 @@ func TestLoadWranglerConfig(t *testing.T) {
 			wantErr:     false,
 		},
 		{
-			name: "R2 バケットを含む設定",
+			name:     "JSON で R2 バケットを含む設定",
+			filename: "wrangler.json",
 			content: `{
 				"name": "r2-worker",
 				"r2_buckets": [
@@ -76,9 +140,16 @@ func TestLoadWranglerConfig(t *testing.T) {
 			wantErr:     false,
 		},
 		{
-			name:    "無効な JSON",
-			content: `{invalid json}`,
-			wantErr: true,
+			name:     "無効な JSON",
+			filename: "wrangler.json",
+			content:  `{invalid json}`,
+			wantErr:  true,
+		},
+		{
+			name:     "無効な TOML",
+			filename: "wrangler.toml",
+			content:  `name = "unclosed`,
+			wantErr:  true,
 		},
 	}
 
@@ -87,7 +158,7 @@ func TestLoadWranglerConfig(t *testing.T) {
 			t.Parallel()
 
 			tmpDir := t.TempDir()
-			configPath := filepath.Join(tmpDir, "wrangler.json")
+			configPath := filepath.Join(tmpDir, tt.filename)
 
 			if err := os.WriteFile(configPath, []byte(tt.content), 0644); err != nil {
 				t.Fatalf("テスト設定ファイルの書き込みに失敗: %v", err)

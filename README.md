@@ -17,7 +17,7 @@ cf-open
 This command reads Wrangler configuration (e.g., `wrangler.jsonc` or `wrangler.toml`) to list resources related to your project. You can select the resource you want to open, and its dashboard will open in your browser.
 
 ```bash
-cf-open
+$ cf-open
 ? Select a resource to open:
   ▸ Worker: worker-name
     Observability: worker-name

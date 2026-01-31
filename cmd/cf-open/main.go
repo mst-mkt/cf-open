@@ -15,6 +15,7 @@ var (
 	wranglerConfigPath string
 	accountID          string
 	openAll            bool
+	printOnly          bool
 )
 
 var version = "dev"
@@ -41,12 +42,23 @@ var rootCmd = &cobra.Command{
 			for i, r := range resources {
 				urls[i] = r.URL
 			}
+			if printOnly {
+				for _, url := range urls {
+					fmt.Println(url)
+				}
+				return nil
+			}
 			return internal.OpenURLs(urls)
 		}
 
 		selectedResource, err := internal.SelectResource(resources)
 		if err != nil {
 			return fmt.Errorf("failed to select resource: %w", err)
+		}
+
+		if printOnly {
+			fmt.Println(selectedResource.URL)
+			return nil
 		}
 
 		return internal.OpenURL(selectedResource.URL)
@@ -57,6 +69,7 @@ func init() {
 	rootCmd.Flags().StringVar(&wranglerConfigPath, "wrangler-config", "", "Path to wrangler configuration file")
 	rootCmd.Flags().StringVar(&accountID, "account-id", "", "Cloudflare account ID")
 	rootCmd.Flags().BoolVarP(&openAll, "all", "a", false, "Open all resources in the browser")
+	rootCmd.Flags().BoolVarP(&printOnly, "print", "p", false, "Print URL to stdout instead of opening in browser")
 }
 
 func main() {

@@ -28,7 +28,7 @@ func GetAccountID(config *WranglerConfig) (string, bool) {
 
 func getAccountFromCache() string {
 	cacheFile := defaultWranglerCachePath
-	
+
 	data, err := os.ReadFile(cacheFile)
 	if err != nil {
 		return ""

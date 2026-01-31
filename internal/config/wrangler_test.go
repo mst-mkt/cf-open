@@ -380,7 +380,7 @@ crons = ["0 * * * *"]
 			tmpDir := t.TempDir()
 			configPath := filepath.Join(tmpDir, tt.filename)
 
-			if err := os.WriteFile(configPath, []byte(tt.content), 0644); err != nil {
+			if err := os.WriteFile(configPath, []byte(tt.content), 0o644); err != nil {
 				t.Fatalf("テスト設定ファイルの書き込みに失敗: %v", err)
 			}
 

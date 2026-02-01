@@ -22,8 +22,9 @@ func SelectResource(resources []cloudflare.Resource) (*cloudflare.Resource, erro
 	}
 
 	prompt := promptui.Select{
-		Label: "Select a resource to open",
-		Items: items,
+		Label:    "Select a resource to open",
+		Items:    items,
+		HideHelp: true,
 	}
 
 	index, _, err := prompt.Run()

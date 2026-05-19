@@ -1,12 +1,12 @@
 {
-  description = "cf-open development environment";
+  description = "cf-open - open Cloudflare dashboard for your project from CLI";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
   outputs =
-    { nixpkgs, ... }:
+    { self, nixpkgs }:
     let
       systems = [
         "x86_64-linux"
@@ -15,8 +15,32 @@
         "aarch64-darwin"
       ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
+      version = self.shortRev or self.dirtyShortRev or "dev";
     in
     {
+      packages = forAllSystems (pkgs: rec {
+        default = cf-open;
+        cf-open = pkgs.buildGoModule {
+          pname = "cf-open";
+          inherit version;
+          src = ./.;
+          vendorHash = "sha256-eYWx+qa8X84yXAtWTELyeHGp1XaTRDM3r9Z2KYHbMJY=";
+          subPackages = [ "cmd/cf-open" ];
+          ldflags = [
+            "-s"
+            "-w"
+            "-X main.version=${version}"
+          ];
+          env.CGO_ENABLED = 0;
+          meta = {
+            description = "Open Cloudflare dashboard for your project from CLI";
+            homepage = "https://github.com/mst-mkt/cf-open";
+            license = nixpkgs.lib.licenses.mit;
+            mainProgram = "cf-open";
+          };
+        };
+      });
+
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
           packages = with pkgs; [

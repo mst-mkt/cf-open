@@ -8,6 +8,10 @@ Open Cloudflare dashboard for your project from CLI.
 go install github.com/mst-mkt/cf-open/cmd/cf-open@latest
 ```
 
+```bash
+nix profile install github:mst-mkt/cf-open
+```
+
 ## Usage
 
 ```bash

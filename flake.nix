@@ -47,6 +47,7 @@
             go
             golangci-lint
             just
+            nodejs-slim_24
           ];
         };
       });

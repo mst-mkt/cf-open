@@ -108,13 +108,21 @@ func LoadWranglerConfig(configPath string) (*WranglerConfig, error) {
 		}
 	}
 
+	ext := strings.ToLower(filepath.Ext(configPath))
+	if ext == ".ts" {
+		if _, err := os.Stat(configPath); err != nil {
+			return nil, fmt.Errorf("failed to find config file: %w", err)
+		}
+
+		return loadTypeScriptConfig(configPath)
+	}
+
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
 	config := &WranglerConfig{}
-	ext := strings.ToLower(filepath.Ext(configPath))
 
 	switch ext {
 	case ".toml":
@@ -134,6 +142,7 @@ func LoadWranglerConfig(configPath string) (*WranglerConfig, error) {
 
 func findWranglerConfig() string {
 	candidates := []string{
+		"cloudflare.config.ts",
 		"wrangler.jsonc",
 		"wrangler.json",
 		"wrangler.toml",

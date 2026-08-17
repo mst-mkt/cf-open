@@ -1,12 +1,10 @@
-import { writeSync } from "node:fs";
+import { writeFileSync, writeSync } from "node:fs";
 import * as nodeModule from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const DEFINITION = Symbol.for("@cloudflare/config:definition");
 const WORKER_TYPE = "cf-worker";
 const WORKER_SCHEME = "cf-worker:";
-
-const RESULT_FD = 3;
 
 const isRecord = (value) => typeof value === "object" && value !== null;
 const unwrap = async (value, ctx) => (typeof value === "function" ? value(ctx) : value);
@@ -26,7 +24,8 @@ const isSupportedRuntime = () => {
 const registerConfigHooks = () =>
   nodeModule.registerHooks({
     resolve: (specifier, context, nextResolve) => {
-      if ((context.importAttributes ?? {}).type !== WORKER_TYPE) return nextResolve(specifier, context);
+      if ((context.importAttributes ?? {}).type !== WORKER_TYPE)
+        return nextResolve(specifier, context);
 
       const isRelative = specifier.startsWith("./") || specifier.startsWith("../");
       const entrypoint =
@@ -79,10 +78,10 @@ const resolveConfig = async (configPath, ctx) => {
 };
 
 const main = async () => {
-  const [configPath, mode] = process.argv.slice(2);
+  const [resultPath, configPath, mode] = process.argv.slice(2);
 
-  if (configPath === undefined) {
-    throw new Error("usage: load-typescript-config <config-path> [mode]");
+  if (resultPath === undefined || configPath === undefined) {
+    throw new Error("usage: load-typescript-config <result-path> <config-path> [mode]");
   }
 
   if (!isSupportedRuntime()) {
@@ -93,8 +92,8 @@ const main = async () => {
     throw new Error(`failed to load ${configPath}: ${reasonOf(error)}`);
   });
 
-  // fd 3 rather than stdout, which the config itself may write to.
-  writeSync(RESULT_FD, JSON.stringify(result));
+  // A file rather than stdout, which the config itself may write to.
+  writeFileSync(resultPath, JSON.stringify(result));
 
   // The config may hold the event loop open, so the result would never reach the caller.
   process.exit(0);

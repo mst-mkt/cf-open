@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"iter"
 	"maps"
 	"os"
@@ -93,36 +92,30 @@ func runLoader(node, configPath, mode string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), loaderTimeout)
 	defer cancel()
 
-	reader, writer, err := os.Pipe()
+	// The result comes back in a file rather than on stdout, which the config itself may write to.
+	result, err := os.CreateTemp("", "cf-open-config-*.json")
 	if err != nil {
-		return nil, fmt.Errorf("failed to open a pipe: %w", err)
+		return nil, fmt.Errorf("failed to create a temporary file: %w", err)
 	}
-	defer func() { _ = reader.Close() }()
 
-	// A grandchild can inherit fd 3 and outlive node, so the read must not wait for it.
-	if err := reader.SetReadDeadline(time.Now().Add(loaderTimeout)); err != nil {
-		return nil, fmt.Errorf("failed to set a read deadline: %w", err)
-	}
+	resultPath := result.Name()
+	_ = result.Close()
+
+	defer func() { _ = os.Remove(resultPath) }()
 
 	stderr := &bytes.Buffer{}
-	cmd := exec.CommandContext(ctx, node, loaderArgs(configPath, mode)...)
+	cmd := exec.CommandContext(ctx, node, loaderArgs(resultPath, configPath, mode)...)
 	cmd.Stdin = strings.NewReader(loaderScript)
 	cmd.Stderr = stderr
-	// The result comes back on fd 3 rather than stdout, which the config itself may write to.
-	cmd.ExtraFiles = []*os.File{writer}
 	cmd.WaitDelay = loaderWaitDelay
 
-	startErr := cmd.Start()
-	_ = writer.Close()
-
-	if startErr != nil {
-		return nil, fmt.Errorf("failed to run node: %w", startErr)
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("failed to run node: %w", err)
 	}
 
-	output, readErr := io.ReadAll(reader)
 	waitErr := cmd.Wait()
 
-	if ctx.Err() != nil || errors.Is(readErr, os.ErrDeadlineExceeded) {
+	if ctx.Err() != nil {
 		return nil, fmt.Errorf("timed out while evaluating %s", configPath)
 	}
 
@@ -130,18 +123,20 @@ func runLoader(node, configPath, mode string) ([]byte, error) {
 		return nil, loaderError(configPath, stderr.String(), waitErr)
 	}
 
-	if readErr != nil {
-		return nil, fmt.Errorf("failed to read the loaded config: %w", readErr)
+	output, err := os.ReadFile(resultPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read the loaded config: %w", err)
 	}
 
 	return output, nil
 }
 
-func loaderArgs(configPath, mode string) []string {
+func loaderArgs(resultPath, configPath, mode string) []string {
 	args := []string{
 		"--input-type=module",
 		"--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
 		"-",
+		resultPath,
 		configPath,
 	}
 

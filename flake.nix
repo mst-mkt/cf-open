@@ -24,7 +24,7 @@
           pname = "cf-open";
           inherit version;
           src = ./.;
-          vendorHash = "sha256-eYWx+qa8X84yXAtWTELyeHGp1XaTRDM3r9Z2KYHbMJY=";
+          vendorHash = "sha256-RrCXSBm3cEvtIvTHumJdLIwHe/lcYyP05UWUV3PkLIY=";
           subPackages = [ "cmd/cf-open" ];
           ldflags = [
             "-s"

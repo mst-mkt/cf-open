@@ -7,14 +7,14 @@ func TestGetAccountID(t *testing.T) {
 
 	tests := []struct {
 		name          string
-		config        *WranglerConfig
+		config        *Config
 		flagAccountID string
 		wantID        string
 		wantHas       bool
 	}{
 		{
 			name: "フラグで account_id が指定されている場合",
-			config: &WranglerConfig{
+			config: &Config{
 				AccountID: "config-account-123",
 			},
 			flagAccountID: "flag-account-456",
@@ -23,7 +23,7 @@ func TestGetAccountID(t *testing.T) {
 		},
 		{
 			name: "設定に account_id がある場合",
-			config: &WranglerConfig{
+			config: &Config{
 				AccountID: "config-account-123",
 			},
 			flagAccountID: "",
@@ -32,7 +32,7 @@ func TestGetAccountID(t *testing.T) {
 		},
 		{
 			name: "設定に account_id がなく `wrangler-account.json` にもない場合",
-			config: &WranglerConfig{
+			config: &Config{
 				AccountID: "",
 			},
 			flagAccountID: "",

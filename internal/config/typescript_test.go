@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestLoadWranglerConfig_TypeScript(t *testing.T) {
+func TestLoad_TypeScript(t *testing.T) {
 	t.Parallel()
 	requireNode(t)
 
@@ -19,7 +19,7 @@ func TestLoadWranglerConfig_TypeScript(t *testing.T) {
 		name    string
 		content string
 		files   map[string]string
-		want    *WranglerConfig
+		want    *Config
 		wantErr string
 	}{
 		{
@@ -36,7 +36,7 @@ func TestLoadWranglerConfig_TypeScript(t *testing.T) {
   },
 }
 `,
-			want: &WranglerConfig{
+			want: &Config{
 				Name:                "plain-worker",
 				Observability:       &ObservabilityConfig{Enabled: true},
 				Triggers:            &TriggersConfig{Crons: []string{"0 * * * *"}},
@@ -64,7 +64,7 @@ export default defineWorker(async () => ({
 			files: map[string]string{
 				"src/index.ts": "throw new Error('the entrypoint must not be evaluated')\n",
 			},
-			want: &WranglerConfig{
+			want: &Config{
 				Name:        "helper-worker",
 				AccountID:   "acc-123",
 				D1Databases: []D1Database{{Binding: "DB", DatabaseName: "my-db", DatabaseID: "db-id"}},
@@ -73,21 +73,21 @@ export default defineWorker(async () => ({
 		{
 			name:    "Promise 形式",
 			content: "export default Promise.resolve({ type: 'worker', name: 'promise-worker' })\n",
-			want:    &WranglerConfig{Name: "promise-worker"},
+			want:    &Config{Name: "promise-worker"},
 		},
 		{
 			name: "stdout に書き込む設定",
 			content: `console.log('noise from the config')
 export default { type: 'worker', name: 'noisy-worker' }
 `,
-			want: &WranglerConfig{Name: "noisy-worker"},
+			want: &Config{Name: "noisy-worker"},
 		},
 		{
 			name: "イベントループを保持する設定",
 			content: `setInterval(() => {}, 100000)
 export default { type: 'worker', name: 'lingering-worker' }
 `,
-			want: &WranglerConfig{Name: "lingering-worker"},
+			want: &Config{Name: "lingering-worker"},
 		},
 		{
 			name:    "worker でない default export",
@@ -112,38 +112,38 @@ export default { type: 'worker', name: 'lingering-worker' }
 
 			configPath := writeFixture(t, tt.content, tt.files)
 
-			got, err := LoadWranglerConfig(configPath)
+			got, err := Load(configPath)
 
 			if tt.wantErr != "" {
 				if err == nil {
-					t.Fatalf("LoadWranglerConfig() error = nil, want an error containing %q", tt.wantErr)
+					t.Fatalf("Load() error = nil, want an error containing %q", tt.wantErr)
 				}
 				if !strings.Contains(err.Error(), tt.wantErr) {
-					t.Errorf("LoadWranglerConfig() error = %v, want it to contain %q", err, tt.wantErr)
+					t.Errorf("Load() error = %v, want it to contain %q", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Fatalf("LoadWranglerConfig() error = %v", err)
+				t.Fatalf("Load() error = %v", err)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("LoadWranglerConfig()\n got = %+v\nwant = %+v", got, tt.want)
+				t.Errorf("Load()\n got = %+v\nwant = %+v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestLoadWranglerConfig_TypeScriptMode(t *testing.T) {
+func TestLoad_TypeScriptMode(t *testing.T) {
 	requireNode(t)
 	t.Setenv("CLOUDFLARE_ENV", "staging")
 
 	content := "export default (ctx) => ({ type: 'worker', name: `worker-${ctx.mode ?? 'none'}` })\n"
 	configPath := writeFixture(t, content, nil)
 
-	cfg, err := LoadWranglerConfig(configPath)
+	cfg, err := Load(configPath)
 	if err != nil {
-		t.Fatalf("LoadWranglerConfig() error = %v", err)
+		t.Fatalf("Load() error = %v", err)
 	}
 
 	if cfg.Name != "worker-staging" {
@@ -151,37 +151,37 @@ func TestLoadWranglerConfig_TypeScriptMode(t *testing.T) {
 	}
 }
 
-func TestLoadWranglerConfig_TypeScriptWithoutNode(t *testing.T) {
+func TestLoad_TypeScriptWithoutNode(t *testing.T) {
 	t.Setenv("PATH", "")
 
 	configPath := writeFixture(t, "export default { type: 'worker', name: 'x' }\n", nil)
 
-	_, err := LoadWranglerConfig(configPath)
+	_, err := Load(configPath)
 
 	if err == nil || !strings.Contains(err.Error(), "node not found in PATH") {
-		t.Errorf("LoadWranglerConfig() error = %v, want a node-not-found error", err)
+		t.Errorf("Load() error = %v, want a node-not-found error", err)
 	}
 }
 
-func TestLoadWranglerConfig_TypeScriptNotFound(t *testing.T) {
+func TestLoad_TypeScriptNotFound(t *testing.T) {
 	t.Parallel()
 
 	configPath := filepath.Join(t.TempDir(), "cloudflare.config.ts")
 
-	_, err := LoadWranglerConfig(configPath)
+	_, err := Load(configPath)
 
 	if err == nil || !strings.Contains(err.Error(), "failed to find config file") {
-		t.Errorf("LoadWranglerConfig() error = %v, want a not-found error", err)
+		t.Errorf("Load() error = %v, want a not-found error", err)
 	}
 }
 
-func TestToWranglerConfig(t *testing.T) {
+func TestToConfig(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name   string
 		loaded string
-		want   *WranglerConfig
+		want   *Config
 	}{
 		{
 			name: "全フィールドの取り込み",
@@ -210,7 +210,7 @@ func TestToWranglerConfig(t *testing.T) {
 				},
 				"settings": {"type": "settings", "accountId": "acc-123"}
 			}`,
-			want: &WranglerConfig{
+			want: &Config{
 				Name:                "my-worker",
 				AccountID:           "acc-123",
 				Observability:       &ObservabilityConfig{Enabled: true},
@@ -241,7 +241,7 @@ func TestToWranglerConfig(t *testing.T) {
 					}
 				}
 			}`,
-			want: &WranglerConfig{Name: "my-worker"},
+			want: &Config{Name: "my-worker"},
 		},
 		{
 			name: "未対応 binding の無視",
@@ -257,7 +257,7 @@ func TestToWranglerConfig(t *testing.T) {
 					}
 				}
 			}`,
-			want: &WranglerConfig{
+			want: &Config{
 				Name:        "my-worker",
 				D1Databases: []D1Database{{Binding: "DB", DatabaseID: "db-id"}},
 			},
@@ -275,7 +275,7 @@ func TestToWranglerConfig(t *testing.T) {
 					}
 				}
 			}`,
-			want: &WranglerConfig{
+			want: &Config{
 				Name: "my-worker",
 				D1Databases: []D1Database{
 					{Binding: "ALPHA", DatabaseID: "alpha-id"},
@@ -287,7 +287,7 @@ func TestToWranglerConfig(t *testing.T) {
 		{
 			name:   "scheduled trigger のない設定",
 			loaded: `{"worker": {"type": "worker", "name": "my-worker", "triggers": [{"type": "fetch"}]}}`,
-			want:   &WranglerConfig{Name: "my-worker"},
+			want:   &Config{Name: "my-worker"},
 		},
 	}
 
@@ -300,16 +300,16 @@ func TestToWranglerConfig(t *testing.T) {
 				t.Fatalf("テスト入力のパースに失敗: %v", err)
 			}
 
-			got := toWranglerConfig(loaded.Worker, loaded.Settings)
+			got := toConfig(loaded.Worker, loaded.Settings)
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("toWranglerConfig()\n got = %+v\nwant = %+v", got, tt.want)
+				t.Errorf("toConfig()\n got = %+v\nwant = %+v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestFindWranglerConfig_Priority(t *testing.T) {
+func TestFindConfig_Priority(t *testing.T) {
 	dir := t.TempDir()
 	for _, name := range []string{"cloudflare.config.ts", "wrangler.jsonc"} {
 		if err := os.WriteFile(filepath.Join(dir, name), []byte("{}"), 0o644); err != nil {
@@ -318,10 +318,10 @@ func TestFindWranglerConfig_Priority(t *testing.T) {
 	}
 	t.Chdir(dir)
 
-	got := findWranglerConfig()
+	got := findConfig()
 
 	if got != "cloudflare.config.ts" {
-		t.Errorf("findWranglerConfig() = %q, want %q", got, "cloudflare.config.ts")
+		t.Errorf("findConfig() = %q, want %q", got, "cloudflare.config.ts")
 	}
 }
 

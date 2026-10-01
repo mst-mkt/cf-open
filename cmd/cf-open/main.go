@@ -32,14 +32,14 @@ var rootCmd = &cobra.Command{
 }
 
 func run(opts options) error {
-	wranglerConfig, err := config.LoadWranglerConfig(opts.wranglerConfig)
+	cfg, err := config.Load(opts.wranglerConfig)
 	if err != nil {
 		return fmt.Errorf("failed to load wrangler config: %w", err)
 	}
 
-	accountID, hasAccount := config.GetAccountID(wranglerConfig, opts.accountID)
+	accountID, hasAccount := config.GetAccountID(cfg, opts.accountID)
 
-	resources := cloudflare.GetResourcesFromConfig(wranglerConfig, accountID, hasAccount)
+	resources := cloudflare.GetResourcesFromConfig(cfg, accountID, hasAccount)
 	if len(resources) == 0 {
 		return fmt.Errorf("no resources found in wrangler config")
 	}

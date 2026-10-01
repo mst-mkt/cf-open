@@ -11,7 +11,7 @@ import (
 	"github.com/tidwall/jsonc"
 )
 
-type WranglerConfig struct {
+type Config struct {
 	Name              string         `json:"name" toml:"name"`
 	AccountID         string         `json:"account_id" toml:"account_id"`
 	CompatibilityDate string         `json:"compatibility_date" toml:"compatibility_date"`
@@ -100,9 +100,9 @@ type ImagesConfig struct {
 	Binding string `json:"binding" toml:"binding"`
 }
 
-func LoadWranglerConfig(configPath string) (*WranglerConfig, error) {
+func Load(configPath string) (*Config, error) {
 	if configPath == "" {
-		configPath = findWranglerConfig()
+		configPath = findConfig()
 		if configPath == "" {
 			return nil, fmt.Errorf("wrangler config file not found")
 		}
@@ -122,7 +122,7 @@ func LoadWranglerConfig(configPath string) (*WranglerConfig, error) {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
-	config := &WranglerConfig{}
+	config := &Config{}
 
 	switch ext {
 	case ".toml":
@@ -140,7 +140,7 @@ func LoadWranglerConfig(configPath string) (*WranglerConfig, error) {
 	return config, nil
 }
 
-func findWranglerConfig() string {
+func findConfig() string {
 	candidates := []string{
 		"cloudflare.config.ts",
 		"wrangler.jsonc",

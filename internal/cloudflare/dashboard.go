@@ -15,48 +15,48 @@ func BuildDashboardURL(accountID, path string, hasAccount bool) string {
 	return fmt.Sprintf("%s/%s/%s", baseURL, accountID, path)
 }
 
-func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, hasAccount bool) []Resource {
+func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount bool) []Resource {
 	var resources []Resource
 
 	// Workers
-	if config.Name != "" {
-		workerURL := fmt.Sprintf("workers/services/view/%s/production", config.Name)
+	if cfg.Name != "" {
+		workerURL := fmt.Sprintf("workers/services/view/%s/production", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeWorker,
-			Name:        config.Name,
-			ID:          config.Name,
-			Description: fmt.Sprintf("Worker: %s", config.Name),
+			Name:        cfg.Name,
+			ID:          cfg.Name,
+			Description: fmt.Sprintf("Worker: %s", cfg.Name),
 			URL:         BuildDashboardURL(accountID, workerURL, hasAccount),
 		})
 	}
 
 	// Workers Observability
-	if config.Name != "" && config.Observability != nil {
-		observabilityURL := fmt.Sprintf("workers/services/view/%s/production/observability", config.Name)
+	if cfg.Name != "" && cfg.Observability != nil {
+		observabilityURL := fmt.Sprintf("workers/services/view/%s/production/observability", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeObservability,
-			Name:        config.Name,
-			ID:          config.Name,
-			Description: fmt.Sprintf("Observability: %s", config.Name),
+			Name:        cfg.Name,
+			ID:          cfg.Name,
+			Description: fmt.Sprintf("Observability: %s", cfg.Name),
 			URL:         BuildDashboardURL(accountID, observabilityURL, hasAccount),
 		})
 	}
 
 	// Workers Cron Triggers
-	if config.Name != "" && config.Triggers != nil && len(config.Triggers.Crons) > 0 {
-		cronURL := fmt.Sprintf("workers/services/view/%s/production/settings#trigger-events", config.Name)
+	if cfg.Name != "" && cfg.Triggers != nil && len(cfg.Triggers.Crons) > 0 {
+		cronURL := fmt.Sprintf("workers/services/view/%s/production/settings#trigger-events", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeCronTriggers,
-			Name:        config.Name,
-			ID:          config.Name,
-			Description: fmt.Sprintf("Cron Triggers: %s", config.Name),
+			Name:        cfg.Name,
+			ID:          cfg.Name,
+			Description: fmt.Sprintf("Cron Triggers: %s", cfg.Name),
 			URL:         BuildDashboardURL(accountID, cronURL, hasAccount),
 		})
 	}
 
 	// Queues
-	if config.Queues != nil {
-		for _, producer := range config.Queues.Producers {
+	if cfg.Queues != nil {
+		for _, producer := range cfg.Queues.Producers {
 			queueURL := fmt.Sprintf("workers/queues/%s/metrics", producer.Queue)
 			resources = append(resources, Resource{
 				Type:        ResourceTypeQueue,
@@ -69,7 +69,7 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// Workflows
-	for _, workflow := range config.Workflows {
+	for _, workflow := range cfg.Workflows {
 		workflowURL := fmt.Sprintf("workers/workflows/%s/instances", workflow.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeWorkflow,
@@ -81,11 +81,11 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// Browser Rendering
-	if config.Browser != nil && config.Browser.Binding != "" {
+	if cfg.Browser != nil && cfg.Browser.Binding != "" {
 		browserURL := "workers/browser-rendering/overview"
 		resources = append(resources, Resource{
 			Type:        ResourceTypeBrowserRendering,
-			Name:        config.Browser.Binding,
+			Name:        cfg.Browser.Binding,
 			ID:          "browser-rendering",
 			Description: "Browser Rendering",
 			URL:         BuildDashboardURL(accountID, browserURL, hasAccount),
@@ -93,7 +93,7 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// VPC
-	if len(config.VPCServices) > 0 {
+	if len(cfg.VPCServices) > 0 {
 		vpcURL := "workers/vpc/services"
 		resources = append(resources, Resource{
 			Type:        ResourceTypeVPC,
@@ -105,7 +105,7 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// R2 Object Storage
-	for _, bucket := range config.R2Buckets {
+	for _, bucket := range cfg.R2Buckets {
 		r2URL := fmt.Sprintf("r2/default/buckets/%s", bucket.BucketName)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeR2,
@@ -117,7 +117,7 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// Workers KV
-	for _, kv := range config.KVNamespaces {
+	for _, kv := range cfg.KVNamespaces {
 		kvURL := fmt.Sprintf("workers/kv/namespaces/%s/metrics", kv.ID)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeKV,
@@ -129,7 +129,7 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// D1 SQL Database
-	for _, db := range config.D1Databases {
+	for _, db := range cfg.D1Databases {
 		d1URL := fmt.Sprintf("workers/d1/databases/%s/metrics", db.DatabaseID)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeD1,
@@ -141,7 +141,7 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// Pipelines
-	for _, pipeline := range config.Pipelines {
+	for _, pipeline := range cfg.Pipelines {
 		pipelineURL := fmt.Sprintf("pipelines/%s/overview", pipeline.Pipeline)
 		resources = append(resources, Resource{
 			Type:        ResourceTypePipeline,
@@ -153,7 +153,7 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// Vectorize
-	for _, vectorize := range config.Vectorize {
+	for _, vectorize := range cfg.Vectorize {
 		vectorizeURL := fmt.Sprintf("ai/vectorize/%s", vectorize.IndexName)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeVectorize,
@@ -166,7 +166,7 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 
 	// Secrets Store
 	seenStoreIDs := make(map[string]bool)
-	for _, secret := range config.SecretsStoreSecrets {
+	for _, secret := range cfg.SecretsStoreSecrets {
 		if seenStoreIDs[secret.StoreID] {
 			continue
 		}
@@ -183,11 +183,11 @@ func GetResourcesFromConfig(config *config.WranglerConfig, accountID string, has
 	}
 
 	// Images
-	if config.Images != nil && config.Images.Binding != "" {
+	if cfg.Images != nil && cfg.Images.Binding != "" {
 		imagesURL := "images"
 		resources = append(resources, Resource{
 			Type:        ResourceTypeImages,
-			Name:        config.Images.Binding,
+			Name:        cfg.Images.Binding,
 			ID:          "images",
 			Description: "Images",
 			URL:         BuildDashboardURL(accountID, imagesURL, hasAccount),

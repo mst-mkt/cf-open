@@ -61,7 +61,7 @@ func (settings *settingsDefinition) accountID() string {
 	return settings.AccountID
 }
 
-func loadTypeScriptConfig(configPath string) (*WranglerConfig, error) {
+func loadTypeScriptConfig(configPath string) (*Config, error) {
 	node, err := exec.LookPath("node")
 	if err != nil {
 		return nil, errors.New("node not found in PATH; cloudflare.config.ts requires Node.js v22.18.0 or later")
@@ -85,7 +85,7 @@ func loadTypeScriptConfig(configPath string) (*WranglerConfig, error) {
 		return nil, fmt.Errorf("no worker found in %s", configPath)
 	}
 
-	return toWranglerConfig(config.Worker, config.Settings), nil
+	return toConfig(config.Worker, config.Settings), nil
 }
 
 func runLoader(node, configPath, mode string) ([]byte, error) {
@@ -156,10 +156,10 @@ func loaderError(configPath, stderr string, waitErr error) error {
 	return errors.New(message)
 }
 
-func toWranglerConfig(worker *workerDefinition, settings *settingsDefinition) *WranglerConfig {
+func toConfig(worker *workerDefinition, settings *settingsDefinition) *Config {
 	env := worker.Env
 
-	return &WranglerConfig{
+	return &Config{
 		Name:          worker.Name,
 		AccountID:     settings.accountID(),
 		Observability: worker.Observability,

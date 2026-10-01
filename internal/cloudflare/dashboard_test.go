@@ -48,19 +48,19 @@ func TestGetResourcesFromConfig(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		config    *config.WranglerConfig
+		config    *config.Config
 		wantTypes []ResourceType
 		wantURLs  map[ResourceType]string
 	}{
 		{
 			name:      "空の設定",
-			config:    &config.WranglerConfig{},
+			config:    &config.Config{},
 			wantTypes: nil,
 			wantURLs:  nil,
 		},
 		{
 			name: "Worker のみ",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Name: "my-worker",
 			},
 			wantTypes: []ResourceType{ResourceTypeWorker},
@@ -70,7 +70,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Worker + Observability",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Name:          "my-worker",
 				Observability: &config.ObservabilityConfig{Enabled: true},
 			},
@@ -82,7 +82,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "KV Namespace",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				KVNamespaces: []config.KVNamespace{
 					{Binding: "MY_KV", ID: "kv-id-123"},
 				},
@@ -94,7 +94,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "D1 Database",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				D1Databases: []config.D1Database{
 					{Binding: "MY_DB", DatabaseName: "my-db", DatabaseID: "d1-id-456"},
 				},
@@ -106,7 +106,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "R2 Bucket",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				R2Buckets: []config.R2Bucket{
 					{Binding: "MY_BUCKET", BucketName: "my-bucket"},
 				},
@@ -118,7 +118,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Queue",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Queues: &config.QueuesConfig{
 					Producers: []config.QueueProducer{
 						{Binding: "MY_QUEUE", Queue: "my-queue"},
@@ -132,7 +132,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Workflow",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Workflows: []config.Workflow{
 					{Binding: "MY_WORKFLOW", Name: "my-workflow", ClassName: "MyWorkflow"},
 				},
@@ -144,7 +144,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Vectorize",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Vectorize: []config.VectorizeIndex{
 					{Binding: "MY_VECTORIZE", IndexName: "my-index"},
 				},
@@ -156,7 +156,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Pipeline",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Pipelines: []config.Pipeline{
 					{Binding: "MY_PIPELINE", Pipeline: "my-pipeline"},
 				},
@@ -168,7 +168,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Secrets Store",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				SecretsStoreSecrets: []config.SecretsStoreSecret{
 					{Binding: "MY_SECRET", StoreID: "store-id", SecretName: "my-secret"},
 				},
@@ -180,7 +180,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Secrets Store - 同じ Store ID をまとめる",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				SecretsStoreSecrets: []config.SecretsStoreSecret{
 					{Binding: "SECRET1", StoreID: "store-id", SecretName: "secret-1"},
 					{Binding: "SECRET2", StoreID: "store-id", SecretName: "secret-2"},
@@ -193,7 +193,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Browser Rendering",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Browser: &config.BrowserConfig{Binding: "MY_BROWSER"},
 			},
 			wantTypes: []ResourceType{ResourceTypeBrowserRendering},
@@ -203,7 +203,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Images",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Images: &config.ImagesConfig{Binding: "MY_IMAGES"},
 			},
 			wantTypes: []ResourceType{ResourceTypeImages},
@@ -213,7 +213,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "VPC Services",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				VPCServices: []config.VPCService{
 					{Binding: "MY_VPC", ServiceID: "vpc-id"},
 				},
@@ -225,7 +225,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Cron Triggers",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Name: "my-worker",
 				Triggers: &config.TriggersConfig{
 					Crons: []string{"0 * * * *"},
@@ -239,7 +239,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "Cron Triggers - Worker 名なしの場合は表示しない",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Triggers: &config.TriggersConfig{
 					Crons: []string{"0 * * * *"},
 				},
@@ -249,7 +249,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 		},
 		{
 			name: "全リソース",
-			config: &config.WranglerConfig{
+			config: &config.Config{
 				Name:          "my-worker",
 				Observability: &config.ObservabilityConfig{Enabled: true},
 				KVNamespaces:  []config.KVNamespace{{Binding: "KV", ID: "kv-id"}},
@@ -321,7 +321,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 func TestGetResourcesFromConfig_NoAccountID(t *testing.T) {
 	t.Parallel()
 
-	cfg := &config.WranglerConfig{
+	cfg := &config.Config{
 		Name: "my-worker",
 		KVNamespaces: []config.KVNamespace{
 			{Binding: "KV", ID: "kv-id"},

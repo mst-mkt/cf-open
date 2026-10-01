@@ -90,6 +90,21 @@ export default { worker: { name: 'lingering-worker' } }
 			want: &Config{Name: "lingering-worker"},
 		},
 		{
+			name: "Workflow を定義する設定",
+			content: `export default {
+  worker: {
+    name: 'workflow-worker',
+    exports: { MyWorkflow: { type: 'workflow', name: 'my-workflow' } },
+    env: { MY_WORKFLOW: { type: 'workflow', name: 'my-workflow', worker: 'workflow-worker', exportName: 'MyWorkflow' } },
+  },
+}
+`,
+			want: &Config{
+				Name:      "workflow-worker",
+				Workflows: []Workflow{{Binding: "MY_WORKFLOW", Name: "my-workflow", ClassName: "MyWorkflow"}},
+			},
+		},
+		{
 			name:    "containers だけの設定",
 			content: "export default { accountId: 'acc-123', containers: [{ name: 'app', image: { dockerfile: './Dockerfile' } }] }\n",
 			want:    &Config{AccountID: "acc-123"},
@@ -322,6 +337,34 @@ func TestToConfig(t *testing.T) {
 			name:   "scheduled trigger のない設定",
 			loaded: `{"worker": {"name": "my-worker", "triggers": [{"type": "fetch"}]}}`,
 			want:   &Config{Name: "my-worker"},
+		},
+		{
+			name: "binding と exports からの Workflow の収集",
+			loaded: `{
+				"worker": {
+					"name": "my-worker",
+					"env": {
+						"REMOTE": {"type": "workflow", "name": "remote-workflow", "worker": "other-worker", "exportName": "RemoteWorkflow"},
+						"LOCAL": {"type": "workflow", "name": "local-workflow", "worker": "my-worker", "exportName": "LocalWorkflow"},
+						"DUPLICATE": {"type": "workflow", "name": "local-workflow", "worker": "my-worker", "exportName": "LocalWorkflow"},
+						"NAMELESS": {"type": "workflow", "worker": "my-worker", "exportName": "NamelessWorkflow"}
+					},
+					"exports": {
+						"LocalWorkflow": {"type": "workflow", "name": "local-workflow"},
+						"UnboundWorkflow": {"type": "workflow", "name": "unbound-workflow"},
+						"Counter": {"type": "durable-object", "storage": "sqlite"},
+						"Api": {"type": "worker"}
+					}
+				}
+			}`,
+			want: &Config{
+				Name: "my-worker",
+				Workflows: []Workflow{
+					{Binding: "DUPLICATE", Name: "local-workflow", ClassName: "LocalWorkflow"},
+					{Binding: "REMOTE", Name: "remote-workflow", ClassName: "RemoteWorkflow"},
+					{Name: "unbound-workflow", ClassName: "UnboundWorkflow"},
+				},
+			},
 		},
 		{
 			name:   "worker のない設定",

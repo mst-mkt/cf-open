@@ -25,8 +25,8 @@ const (
 )
 
 type typeScriptConfig struct {
-	Worker   *workerDefinition   `json:"worker"`
-	Settings *settingsDefinition `json:"settings"`
+	AccountID string            `json:"accountId"`
+	Worker    *workerDefinition `json:"worker"`
 }
 
 type workerDefinition struct {
@@ -47,18 +47,6 @@ type workerBinding struct {
 	Name       string `json:"name"`
 	StoreID    string `json:"storeId"`
 	SecretName string `json:"secretName"`
-}
-
-type settingsDefinition struct {
-	AccountID string `json:"accountId"`
-}
-
-func (settings *settingsDefinition) accountID() string {
-	if settings == nil {
-		return ""
-	}
-
-	return settings.AccountID
 }
 
 func loadTypeScriptConfig(configPath string) (*Config, error) {
@@ -85,7 +73,7 @@ func loadTypeScriptConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("no worker found in %s", configPath)
 	}
 
-	return toConfig(config.Worker, config.Settings), nil
+	return toConfig(config.Worker, config.AccountID), nil
 }
 
 func runLoader(node, configPath, mode string) ([]byte, error) {
@@ -156,12 +144,12 @@ func loaderError(configPath, stderr string, waitErr error) error {
 	return errors.New(message)
 }
 
-func toConfig(worker *workerDefinition, settings *settingsDefinition) *Config {
+func toConfig(worker *workerDefinition, accountID string) *Config {
 	env := worker.Env
 
 	return &Config{
 		Name:          worker.Name,
-		AccountID:     settings.accountID(),
+		AccountID:     accountID,
 		Observability: worker.Observability,
 		Triggers:      cronTriggers(worker.Triggers),
 		Queues:        queuesConfig(env),

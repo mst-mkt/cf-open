@@ -23,21 +23,25 @@ func TestLoad_TypeScript(t *testing.T) {
 		wantErr string
 	}{
 		{
-			name: "プレーンオブジェクト形式",
+			name: "オブジェクト形式",
 			content: `export default {
-  type: 'worker',
-  name: 'plain-worker',
-  observability: { enabled: true },
-  triggers: [{ type: 'scheduled', schedule: '0 * * * *' }],
-  env: {
-    DB: { type: 'd1', name: 'my-db', id: 'db-id' },
-    SECRET: { type: 'secrets-store-secret', storeId: 'store-id', secretName: 'my-secret' },
-    VPC: { type: 'vpc-service', id: 'vpc-id' },
+  accountId: 'acc-123',
+  worker: {
+    name: 'plain-worker',
+    compatibilityDate: '2026-09-30',
+    observability: { enabled: true },
+    triggers: [{ type: 'scheduled', schedule: '0 * * * *' }],
+    env: {
+      DB: { type: 'd1', name: 'my-db', id: 'db-id' },
+      SECRET: { type: 'secrets-store-secret', storeId: 'store-id', secretName: 'my-secret' },
+      VPC: { type: 'vpc-service', id: 'vpc-id' },
+    },
   },
 }
 `,
 			want: &Config{
 				Name:                "plain-worker",
+				AccountID:           "acc-123",
 				Observability:       &ObservabilityConfig{Enabled: true},
 				Triggers:            &TriggersConfig{Crons: []string{"0 * * * *"}},
 				VPCServices:         []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
@@ -46,57 +50,68 @@ func TestLoad_TypeScript(t *testing.T) {
 			},
 		},
 		{
-			name: "defineWorker ヘルパー形式 + entrypoint import",
+			name: "関数形式の worker + entrypoint import",
 			content: `import * as entrypoint from './src/index.ts' with { type: 'cf-worker' }
 
-const DEFINITION = Symbol.for('@cloudflare/config:definition')
-const defineWorker = (config) => ({ [DEFINITION]: { config, type: 'worker' } })
-const defineSettings = (config) => ({ [DEFINITION]: { config, type: 'settings' } })
-
-export const settings = defineSettings({ accountId: 'acc-123' })
-
-export default defineWorker(async () => ({
-  name: 'helper-worker',
+const worker = async () => ({
+  name: 'function-worker',
   entrypoint,
   env: { DB: { type: 'd1', name: 'my-db', id: 'db-id' } },
-}))
+})
+
+export default () => ({ accountId: 'acc-123', worker })
 `,
 			files: map[string]string{
 				"src/index.ts": "throw new Error('the entrypoint must not be evaluated')\n",
 			},
 			want: &Config{
-				Name:        "helper-worker",
+				Name:        "function-worker",
 				AccountID:   "acc-123",
 				D1Databases: []D1Database{{Binding: "DB", DatabaseName: "my-db", DatabaseID: "db-id"}},
 			},
 		},
 		{
 			name:    "Promise 形式",
-			content: "export default Promise.resolve({ type: 'worker', name: 'promise-worker' })\n",
+			content: "export default Promise.resolve({ worker: Promise.resolve({ name: 'promise-worker' }) })\n",
 			want:    &Config{Name: "promise-worker"},
 		},
 		{
 			name: "stdout に書き込む設定",
 			content: `console.log('noise from the config')
-export default { type: 'worker', name: 'noisy-worker' }
+export default { worker: { name: 'noisy-worker' } }
 `,
 			want: &Config{Name: "noisy-worker"},
 		},
 		{
 			name: "イベントループを保持する設定",
 			content: `setInterval(() => {}, 100000)
-export default { type: 'worker', name: 'lingering-worker' }
+export default { worker: { name: 'lingering-worker' } }
 `,
 			want: &Config{Name: "lingering-worker"},
 		},
 		{
-			name:    "worker でない default export",
-			content: "export default { name: 'no-type' }\n",
-			wantErr: "cloudflare.config.ts: the default export must be a worker",
+			name:    "default export のない設定",
+			content: "export const worker = { name: 'named-only' }\n",
+			wantErr: "cloudflare.config.ts: the config has no default export",
+		},
+		{
+			name:    "オブジェクトでない default export",
+			content: "export default 'not-a-config'\n",
+			wantErr: "cloudflare.config.ts: the default export must be an object",
+		},
+		{
+			name:    "オブジェクトでない worker",
+			content: "export default { worker: () => 'not-a-worker' }\n",
+			wantErr: "cloudflare.config.ts: the worker must be an object",
+		},
+		{
+			name:    "文字列でない accountId",
+			content: "export default { accountId: 123, worker: { name: 'w' } }\n",
+			wantErr: "cloudflare.config.ts: accountId must be a string",
 		},
 		{
 			name:    "型ストリップできない TypeScript 構文",
-			content: "enum Mode { Prod }\nexport default { type: 'worker', name: `w-${Mode.Prod}` }\n",
+			content: "enum Mode { Prod }\nexport default { worker: { name: `w-${Mode.Prod}` } }\n",
 			wantErr: "cloudflare.config.ts:",
 		},
 		{
@@ -138,7 +153,7 @@ func TestLoad_TypeScriptMode(t *testing.T) {
 	requireNode(t)
 	t.Setenv("CLOUDFLARE_ENV", "staging")
 
-	content := "export default (ctx) => ({ type: 'worker', name: `worker-${ctx.mode ?? 'none'}` })\n"
+	content := "export default (ctx) => ({ worker: { name: `worker-${ctx.mode ?? 'none'}-${ctx.isPreview}` } })\n"
 	configPath := writeFixture(t, content, nil)
 
 	cfg, err := Load(configPath)
@@ -146,15 +161,15 @@ func TestLoad_TypeScriptMode(t *testing.T) {
 		t.Fatalf("Load() error = %v", err)
 	}
 
-	if cfg.Name != "worker-staging" {
-		t.Errorf("Name = %q, want %q", cfg.Name, "worker-staging")
+	if cfg.Name != "worker-staging-false" {
+		t.Errorf("Name = %q, want %q", cfg.Name, "worker-staging-false")
 	}
 }
 
 func TestLoad_TypeScriptWithoutNode(t *testing.T) {
 	t.Setenv("PATH", "")
 
-	configPath := writeFixture(t, "export default { type: 'worker', name: 'x' }\n", nil)
+	configPath := writeFixture(t, "export default { worker: { name: 'x' } }\n", nil)
 
 	_, err := Load(configPath)
 
@@ -187,7 +202,6 @@ func TestToConfig(t *testing.T) {
 			name: "全フィールドの取り込み",
 			loaded: `{
 				"worker": {
-					"type": "worker",
 					"name": "my-worker",
 					"observability": {"enabled": true},
 					"triggers": [
@@ -208,7 +222,7 @@ func TestToConfig(t *testing.T) {
 						"IMAGES": {"type": "images"}
 					}
 				},
-				"settings": {"type": "settings", "accountId": "acc-123"}
+				"accountId": "acc-123"
 			}`,
 			want: &Config{
 				Name:                "my-worker",
@@ -231,7 +245,6 @@ func TestToConfig(t *testing.T) {
 			name: "URL に必要な値が欠けた binding の除外",
 			loaded: `{
 				"worker": {
-					"type": "worker",
 					"name": "my-worker",
 					"env": {
 						"DB": {"type": "d1", "name": "id-less-db"},
@@ -247,7 +260,6 @@ func TestToConfig(t *testing.T) {
 			name: "未対応 binding の無視",
 			loaded: `{
 				"worker": {
-					"type": "worker",
 					"name": "my-worker",
 					"env": {
 						"AI": {"type": "ai"},
@@ -266,7 +278,6 @@ func TestToConfig(t *testing.T) {
 			name: "同じ種別の binding の名前順",
 			loaded: `{
 				"worker": {
-					"type": "worker",
 					"name": "my-worker",
 					"env": {
 						"ZED": {"type": "d1", "id": "zed-id"},
@@ -286,7 +297,7 @@ func TestToConfig(t *testing.T) {
 		},
 		{
 			name:   "scheduled trigger のない設定",
-			loaded: `{"worker": {"type": "worker", "name": "my-worker", "triggers": [{"type": "fetch"}]}}`,
+			loaded: `{"worker": {"name": "my-worker", "triggers": [{"type": "fetch"}]}}`,
 			want:   &Config{Name: "my-worker"},
 		},
 	}
@@ -300,7 +311,7 @@ func TestToConfig(t *testing.T) {
 				t.Fatalf("テスト入力のパースに失敗: %v", err)
 			}
 
-			got := toConfig(loaded.Worker, loaded.Settings)
+			got := toConfig(loaded.Worker, loaded.AccountID)
 
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("toConfig()\n got = %+v\nwant = %+v", got, tt.want)

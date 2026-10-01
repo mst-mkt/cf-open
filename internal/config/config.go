@@ -96,7 +96,13 @@ type ImagesConfig struct {
 	Binding string `json:"binding" toml:"binding"`
 }
 
-func Load(configPath string) (*Config, error) {
+type Options struct {
+	Path string
+	Mode string
+}
+
+func Load(opts Options) (*Config, error) {
+	configPath := opts.Path
 	if configPath == "" {
 		configPath = findConfig()
 		if configPath == "" {
@@ -109,7 +115,7 @@ func Load(configPath string) (*Config, error) {
 			return nil, fmt.Errorf("failed to find config file: %w", err)
 		}
 
-		return loadTypeScriptConfig(configPath)
+		return loadTypeScriptConfig(configPath, opts.Mode)
 	}
 
 	return loadWranglerConfig(configPath)

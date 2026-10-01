@@ -18,6 +18,7 @@ type options struct {
 	accountID      string
 	all            bool
 	print          bool
+	mode           string
 }
 
 var opts options
@@ -32,7 +33,7 @@ var rootCmd = &cobra.Command{
 }
 
 func run(opts options) error {
-	cfg, err := config.Load(opts.wranglerConfig)
+	cfg, err := config.Load(config.Options{Path: opts.wranglerConfig, Mode: opts.mode})
 	if err != nil {
 		return fmt.Errorf("failed to load wrangler config: %w", err)
 	}
@@ -87,6 +88,7 @@ func init() {
 	rootCmd.Flags().StringVar(&opts.accountID, "account-id", "", "Cloudflare account ID")
 	rootCmd.Flags().BoolVarP(&opts.all, "all", "a", false, "Open all resources in the browser")
 	rootCmd.Flags().BoolVarP(&opts.print, "print", "p", false, "Print URL to stdout instead of opening in browser")
+	rootCmd.Flags().StringVarP(&opts.mode, "mode", "m", "", "Mode passed to a function-form cloudflare.config.ts")
 }
 
 func main() {

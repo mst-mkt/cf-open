@@ -137,7 +137,7 @@ export default { worker: { name: 'lingering-worker' } }
 
 			configPath := writeFixture(t, tt.content, tt.files)
 
-			got, err := Load(configPath)
+			got, err := Load(Options{Path: configPath})
 
 			if tt.wantErr != "" {
 				if err == nil {
@@ -166,13 +166,26 @@ func TestLoad_TypeScriptMode(t *testing.T) {
 	content := "export default (ctx) => ({ worker: { name: `worker-${ctx.mode ?? 'none'}-${ctx.isPreview}` } })\n"
 	configPath := writeFixture(t, content, nil)
 
-	cfg, err := Load(configPath)
-	if err != nil {
-		t.Fatalf("Load() error = %v", err)
+	tests := []struct {
+		name string
+		mode string
+		want string
+	}{
+		{name: "mode の指定", mode: "production", want: "worker-production-false"},
+		{name: "mode の未指定", mode: "", want: "worker-none-false"},
 	}
 
-	if cfg.Name != "worker-staging-false" {
-		t.Errorf("Name = %q, want %q", cfg.Name, "worker-staging-false")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, err := Load(Options{Path: configPath, Mode: tt.mode})
+			if err != nil {
+				t.Fatalf("Load() error = %v", err)
+			}
+
+			if cfg.Name != tt.want {
+				t.Errorf("Name = %q, want %q", cfg.Name, tt.want)
+			}
+		})
 	}
 }
 
@@ -181,7 +194,7 @@ func TestLoad_TypeScriptWithoutNode(t *testing.T) {
 
 	configPath := writeFixture(t, "export default { worker: { name: 'x' } }\n", nil)
 
-	_, err := Load(configPath)
+	_, err := Load(Options{Path: configPath})
 
 	if err == nil || !strings.Contains(err.Error(), "node not found in PATH") {
 		t.Errorf("Load() error = %v, want a node-not-found error", err)
@@ -193,7 +206,7 @@ func TestLoad_TypeScriptNotFound(t *testing.T) {
 
 	configPath := filepath.Join(t.TempDir(), "cloudflare.config.ts")
 
-	_, err := Load(configPath)
+	_, err := Load(Options{Path: configPath})
 
 	if err == nil || !strings.Contains(err.Error(), "failed to find config file") {
 		t.Errorf("Load() error = %v, want a not-found error", err)

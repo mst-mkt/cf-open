@@ -9,7 +9,7 @@ import (
 func TestLoad_FileNotFound(t *testing.T) {
 	t.Parallel()
 
-	_, err := Load("/nonexistent/path/wrangler.json")
+	_, err := Load(Options{Path: "/nonexistent/path/wrangler.json"})
 	if err == nil {
 		t.Error("Load() expected error for nonexistent file, got nil")
 	}
@@ -18,7 +18,7 @@ func TestLoad_FileNotFound(t *testing.T) {
 func TestLoad_EmptyPath(t *testing.T) {
 	t.Parallel()
 
-	_, err := Load("")
+	_, err := Load(Options{})
 	if err == nil {
 		t.Error("Load() expected error for empty path with no wrangler config, got nil")
 	}

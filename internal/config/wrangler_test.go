@@ -384,7 +384,7 @@ crons = ["0 * * * *"]
 				t.Fatalf("テスト設定ファイルの書き込みに失敗: %v", err)
 			}
 
-			got, err := Load(configPath)
+			got, err := Load(Options{Path: configPath})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Load() error = %v, wantErr %v", err, tt.wantErr)
 				return

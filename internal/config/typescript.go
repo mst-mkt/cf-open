@@ -49,13 +49,13 @@ type workerBinding struct {
 	SecretName string `json:"secretName"`
 }
 
-func loadTypeScriptConfig(configPath string) (*Config, error) {
+func loadTypeScriptConfig(configPath, mode string) (*Config, error) {
 	node, err := exec.LookPath("node")
 	if err != nil {
 		return nil, errors.New("node not found in PATH; cloudflare.config.ts requires Node.js v22.18.0 or later")
 	}
 
-	output, err := runLoader(node, configPath, os.Getenv("CLOUDFLARE_ENV"))
+	output, err := runLoader(node, configPath, mode)
 	if err != nil {
 		return nil, err
 	}

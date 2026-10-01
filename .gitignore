@@ -8,3 +8,5 @@
 go.work
 bin
 .direnv/
+
+node_modules/

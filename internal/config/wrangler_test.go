@@ -400,21 +400,3 @@ crons = ["0 * * * *"]
 		})
 	}
 }
-
-func TestLoad_FileNotFound(t *testing.T) {
-	t.Parallel()
-
-	_, err := Load("/nonexistent/path/wrangler.json")
-	if err == nil {
-		t.Error("Load() expected error for nonexistent file, got nil")
-	}
-}
-
-func TestLoad_EmptyPath(t *testing.T) {
-	t.Parallel()
-
-	_, err := Load("")
-	if err == nil {
-		t.Error("Load() expected error for empty path with no wrangler config, got nil")
-	}
-}

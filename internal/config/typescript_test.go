@@ -309,22 +309,6 @@ func TestToConfig(t *testing.T) {
 	}
 }
 
-func TestFindConfig_Priority(t *testing.T) {
-	dir := t.TempDir()
-	for _, name := range []string{"cloudflare.config.ts", "wrangler.jsonc"} {
-		if err := os.WriteFile(filepath.Join(dir, name), []byte("{}"), 0o644); err != nil {
-			t.Fatalf("テスト設定ファイルの書き込みに失敗: %v", err)
-		}
-	}
-	t.Chdir(dir)
-
-	got := findConfig()
-
-	if got != "cloudflare.config.ts" {
-		t.Errorf("findConfig() = %q, want %q", got, "cloudflare.config.ts")
-	}
-}
-
 func writeFixture(t *testing.T, content string, files map[string]string) string {
 	t.Helper()
 

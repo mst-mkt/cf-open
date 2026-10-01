@@ -69,10 +69,6 @@ func loadTypeScriptConfig(configPath string) (*Config, error) {
 		return nil, fmt.Errorf("failed to parse the loaded config: %w", err)
 	}
 
-	if config.Worker == nil {
-		return nil, fmt.Errorf("no worker found in %s", configPath)
-	}
-
 	return toConfig(config.Worker, config.AccountID), nil
 }
 
@@ -145,6 +141,10 @@ func loaderError(configPath, stderr string, waitErr error) error {
 }
 
 func toConfig(worker *workerDefinition, accountID string) *Config {
+	if worker == nil {
+		return &Config{AccountID: accountID}
+	}
+
 	env := worker.Env
 
 	return &Config{

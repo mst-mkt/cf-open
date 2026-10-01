@@ -90,6 +90,16 @@ export default { worker: { name: 'lingering-worker' } }
 			want: &Config{Name: "lingering-worker"},
 		},
 		{
+			name:    "containers だけの設定",
+			content: "export default { accountId: 'acc-123', containers: [{ name: 'app', image: { dockerfile: './Dockerfile' } }] }\n",
+			want:    &Config{AccountID: "acc-123"},
+		},
+		{
+			name:    "worker が null の設定",
+			content: "export default { worker: () => null }\n",
+			want:    &Config{},
+		},
+		{
 			name:    "default export のない設定",
 			content: "export const worker = { name: 'named-only' }\n",
 			wantErr: "cloudflare.config.ts: the config has no default export",
@@ -299,6 +309,11 @@ func TestToConfig(t *testing.T) {
 			name:   "scheduled trigger のない設定",
 			loaded: `{"worker": {"name": "my-worker", "triggers": [{"type": "fetch"}]}}`,
 			want:   &Config{Name: "my-worker"},
+		},
+		{
+			name:   "worker のない設定",
+			loaded: `{"accountId": "acc-123"}`,
+			want:   &Config{AccountID: "acc-123"},
 		},
 	}
 

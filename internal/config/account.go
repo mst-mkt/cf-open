@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
 const defaultWranglerCachePath = "node_modules/.cache/wrangler/wrangler-account.json"
@@ -27,15 +28,15 @@ func GetAccountID(config *Config, flagAccountID string) (string, bool) {
 		return config.AccountID, true
 	}
 
-	if accountID := getAccountFromCache(); accountID != "" {
+	if accountID := getAccountFromCache(filepath.Dir(config.Path)); accountID != "" {
 		return accountID, true
 	}
 
 	return "", false
 }
 
-func getAccountFromCache() string {
-	cacheFile := defaultWranglerCachePath
+func getAccountFromCache(dir string) string {
+	cacheFile := filepath.Join(dir, defaultWranglerCachePath)
 
 	data, err := os.ReadFile(cacheFile)
 	if err != nil {

@@ -8,6 +8,8 @@ import (
 )
 
 type Config struct {
+	Path string `json:"-" toml:"-"`
+
 	Name              string         `json:"name" toml:"name"`
 	AccountID         string         `json:"account_id" toml:"account_id"`
 	CompatibilityDate string         `json:"compatibility_date" toml:"compatibility_date"`
@@ -104,7 +106,12 @@ type Options struct {
 func Load(opts Options) (*Config, error) {
 	configPath := opts.Path
 	if configPath == "" {
-		configPath = findConfig()
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get the working directory: %w", err)
+		}
+
+		configPath = findConfig(wd)
 		if configPath == "" {
 			return nil, fmt.Errorf("wrangler config file not found")
 		}
@@ -114,18 +121,29 @@ func Load(opts Options) (*Config, error) {
 		return nil, fmt.Errorf("%s holds only Wrangler tooling settings; pass cloudflare.config.ts instead", configPath)
 	}
 
+	config, err := loadConfigFile(configPath, opts.Mode)
+	if err != nil {
+		return nil, err
+	}
+
+	config.Path = configPath
+
+	return config, nil
+}
+
+func loadConfigFile(configPath, mode string) (*Config, error) {
 	if strings.ToLower(filepath.Ext(configPath)) == ".ts" {
 		if _, err := os.Stat(configPath); err != nil {
 			return nil, fmt.Errorf("failed to find config file: %w", err)
 		}
 
-		return loadTypeScriptConfig(configPath, opts.Mode)
+		return loadTypeScriptConfig(configPath, mode)
 	}
 
 	return loadWranglerConfig(configPath)
 }
 
-func findConfig() string {
+func findConfig(dir string) string {
 	candidates := []string{
 		"cloudflare.config.ts",
 		"wrangler.jsonc",
@@ -133,11 +151,19 @@ func findConfig() string {
 		"wrangler.toml",
 	}
 
-	for _, candidate := range candidates {
-		if _, err := os.Stat(candidate); err == nil {
-			return candidate
+	for {
+		for _, candidate := range candidates {
+			path := filepath.Join(dir, candidate)
+			if info, err := os.Stat(path); err == nil && !info.IsDir() {
+				return path
+			}
 		}
-	}
 
-	return ""
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return ""
+		}
+
+		dir = parent
+	}
 }

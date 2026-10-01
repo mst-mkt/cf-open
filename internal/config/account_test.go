@@ -1,6 +1,9 @@
 package config
 
-import "testing"
+import (
+	"path/filepath"
+	"testing"
+)
 
 func TestGetAccountID(t *testing.T) {
 	tests := []struct {
@@ -65,5 +68,21 @@ func TestGetAccountID(t *testing.T) {
 				t.Errorf("GetAccountID() hasAccount = %v, want %v", gotHas, tt.wantHas)
 			}
 		})
+	}
+}
+
+func TestGetAccountID_CacheNextToConfig(t *testing.T) {
+	t.Setenv("CLOUDFLARE_ACCOUNT_ID", "")
+
+	root := t.TempDir()
+	writeFiles(t, root, map[string]string{
+		defaultWranglerCachePath: `{"account": {"id": "cached-account-123", "name": "cached"}}`,
+	})
+	t.Chdir(t.TempDir())
+
+	gotID, gotHas := GetAccountID(&Config{Path: filepath.Join(root, "wrangler.jsonc")}, "")
+
+	if gotID != "cached-account-123" || !gotHas {
+		t.Errorf("GetAccountID() = (%q, %v), want (%q, true)", gotID, gotHas, "cached-account-123")
 	}
 }

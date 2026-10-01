@@ -167,8 +167,10 @@ export default { worker: { name: 'lingering-worker' } }
 			if err != nil {
 				t.Fatalf("Load() error = %v", err)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Load()\n got = %+v\nwant = %+v", got, tt.want)
+			want := *tt.want
+			want.Path = configPath
+			if !reflect.DeepEqual(got, &want) {
+				t.Errorf("Load()\n got = %+v\nwant = %+v", got, &want)
 			}
 		})
 	}
@@ -395,15 +397,7 @@ func writeFixture(t *testing.T, content string, files map[string]string) string 
 	t.Helper()
 
 	dir := t.TempDir()
-	for name, body := range files {
-		path := filepath.Join(dir, filepath.FromSlash(name))
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			t.Fatalf("テスト用ディレクトリの作成に失敗: %v", err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
-			t.Fatalf("テスト用ファイルの書き込みに失敗: %v", err)
-		}
-	}
+	writeFiles(t, dir, files)
 
 	configPath := filepath.Join(dir, "cloudflare.config.ts")
 	if err := os.WriteFile(configPath, []byte(content), 0o644); err != nil {

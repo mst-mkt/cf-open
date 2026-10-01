@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -113,7 +114,7 @@ func Load(opts Options) (*Config, error) {
 
 		configPath = findConfig(wd)
 		if configPath == "" {
-			return nil, fmt.Errorf("wrangler config file not found")
+			return nil, errors.New("no config file found (cloudflare.config.ts, wrangler.jsonc, wrangler.json or wrangler.toml)")
 		}
 	}
 

@@ -21,7 +21,7 @@ func TestLoad_EmptyPath(t *testing.T) {
 
 	_, err := Load(Options{})
 	if err == nil {
-		t.Error("Load() expected error for empty path with no wrangler config, got nil")
+		t.Error("Load() expected error for empty path with no config file, got nil")
 	}
 }
 

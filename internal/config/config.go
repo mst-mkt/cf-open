@@ -110,6 +110,10 @@ func Load(opts Options) (*Config, error) {
 		}
 	}
 
+	if strings.EqualFold(filepath.Base(configPath), "wrangler.config.ts") {
+		return nil, fmt.Errorf("%s holds only Wrangler tooling settings; pass cloudflare.config.ts instead", configPath)
+	}
+
 	if strings.ToLower(filepath.Ext(configPath)) == ".ts" {
 		if _, err := os.Stat(configPath); err != nil {
 			return nil, fmt.Errorf("failed to find config file: %w", err)

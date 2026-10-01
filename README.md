@@ -18,7 +18,7 @@ nix profile install github:mst-mkt/cf-open
 cf-open
 ```
 
-This command reads Wrangler configuration (e.g., `cloudflare.config.ts`, `wrangler.jsonc` or `wrangler.toml`) to list resources related to your project. You can select the resource you want to open, and its dashboard will open in your browser.
+This command reads your project's configuration (`cloudflare.config.ts`, `wrangler.jsonc`, `wrangler.json` or `wrangler.toml`) to list resources related to your project. The file is searched for in the current directory and then in its parent directories. You can select the resource you want to open, and its dashboard will open in your browser.
 
 ```bash
 $ cf-open
@@ -31,17 +31,20 @@ $ cf-open
 
 If there is only one resource, it will open directly.
 
-Reading `cloudflare.config.ts` requires Node.js v22.18.0 or later, as the file is evaluated with `node` from your `PATH`. Set `CLOUDFLARE_ENV` to choose the mode passed to a function-form config.
+Reading `cloudflare.config.ts` requires Node.js v22.18.0 or later, as the file is evaluated with `node` from your `PATH`. Use `--mode` to choose the mode passed to a function-form config.
+
+The account ID in the dashboard URL is taken from the first of these that is set: `--account-id`, the `CLOUDFLARE_ACCOUNT_ID` environment variable, the configuration file, the account cached by `cf`, then the one cached by Wrangler.
 
 ### Options
 
-| Option                    | Description                                                                                          |
-| ------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `-c`, `--wrangler-config` | Path to the wrangler configuration file. Supports JSONC, TOML and TypeScript (experimental) formats. |
-| `--account-id`            | Cloudflare account ID                                                                                |
-| `-a`, `--all`             | Open all resources in the browser                                                                    |
-| `-p`, `--print`           | Print URL to stdout instead of opening in browser                                                    |
-| `-v`, `--version`         | Print the version number                                                                             |
+| Option            | Description                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------------- |
+| `-c`, `--config`  | Path to the configuration file (`cloudflare.config.ts`, `wrangler.jsonc`, `wrangler.json` or `wrangler.toml`) |
+| `-m`, `--mode`    | Mode passed to a function-form `cloudflare.config.ts`                                                         |
+| `--account-id`    | Cloudflare account ID                                                                                         |
+| `-a`, `--all`     | Open all resources in the browser                                                                             |
+| `-p`, `--print`   | Print URL to stdout instead of opening in browser                                                             |
+| `-v`, `--version` | Print the version number                                                                                      |
 
 ## Supported Resources
 

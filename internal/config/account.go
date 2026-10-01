@@ -19,6 +19,10 @@ func GetAccountID(config *Config, flagAccountID string) (string, bool) {
 		return flagAccountID, true
 	}
 
+	if accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID"); accountID != "" {
+		return accountID, true
+	}
+
 	if config.AccountID != "" {
 		return config.AccountID, true
 	}

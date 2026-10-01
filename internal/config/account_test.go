@@ -3,12 +3,11 @@ package config
 import "testing"
 
 func TestGetAccountID(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name          string
 		config        *Config
 		flagAccountID string
+		envAccountID  string
 		wantID        string
 		wantHas       bool
 	}{
@@ -18,7 +17,18 @@ func TestGetAccountID(t *testing.T) {
 				AccountID: "config-account-123",
 			},
 			flagAccountID: "flag-account-456",
+			envAccountID:  "env-account-789",
 			wantID:        "flag-account-456",
+			wantHas:       true,
+		},
+		{
+			name: "環境変数で account_id が指定されている場合",
+			config: &Config{
+				AccountID: "config-account-123",
+			},
+			flagAccountID: "",
+			envAccountID:  "env-account-789",
+			wantID:        "env-account-789",
 			wantHas:       true,
 		},
 		{
@@ -27,6 +37,7 @@ func TestGetAccountID(t *testing.T) {
 				AccountID: "config-account-123",
 			},
 			flagAccountID: "",
+			envAccountID:  "",
 			wantID:        "config-account-123",
 			wantHas:       true,
 		},
@@ -36,6 +47,7 @@ func TestGetAccountID(t *testing.T) {
 				AccountID: "",
 			},
 			flagAccountID: "",
+			envAccountID:  "",
 			wantID:        "",
 			wantHas:       false,
 		},
@@ -43,7 +55,7 @@ func TestGetAccountID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
+			t.Setenv("CLOUDFLARE_ACCOUNT_ID", tt.envAccountID)
 
 			gotID, gotHas := GetAccountID(tt.config, tt.flagAccountID)
 			if gotID != tt.wantID {

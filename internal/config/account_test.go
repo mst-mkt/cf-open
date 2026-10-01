@@ -74,20 +74,60 @@ func TestGetAccountID(t *testing.T) {
 	}
 }
 
-func TestGetAccountID_CacheNextToConfig(t *testing.T) {
-	t.Setenv("CLOUDFLARE_ACCOUNT_ID", "")
-	t.Setenv("WRANGLER_CACHE_DIR", "")
+func TestGetAccountID_Cache(t *testing.T) {
+	const (
+		cfCache       = "node_modules/.cache/cloudflare/cloudflare-account.json"
+		wranglerCache = "node_modules/.cache/wrangler/wrangler-account.json"
+	)
 
-	root := t.TempDir()
-	writeFiles(t, root, map[string]string{
-		"node_modules/.cache/wrangler/wrangler-account.json": `{"account": {"id": "cached-account-123", "name": "cached"}}`,
-	})
-	t.Chdir(t.TempDir())
+	tests := []struct {
+		name   string
+		files  map[string]string
+		wantID string
+	}{
+		{
+			name:   "Wrangler のキャッシュ",
+			files:  map[string]string{wranglerCache: `{"account": {"id": "wrangler-account", "name": "w"}}`},
+			wantID: "wrangler-account",
+		},
+		{
+			name:   "cf のキャッシュ",
+			files:  map[string]string{cfCache: `{"account": {"id": "cf-account", "name": "c"}}`},
+			wantID: "cf-account",
+		},
+		{
+			name: "cf と Wrangler の両方のキャッシュ",
+			files: map[string]string{
+				cfCache:       `{"account": {"id": "cf-account", "name": "c"}}`,
+				wranglerCache: `{"account": {"id": "wrangler-account", "name": "w"}}`,
+			},
+			wantID: "cf-account",
+		},
+		{
+			name: "壊れた cf のキャッシュ",
+			files: map[string]string{
+				cfCache:       `{`,
+				wranglerCache: `{"account": {"id": "wrangler-account", "name": "w"}}`,
+			},
+			wantID: "wrangler-account",
+		},
+	}
 
-	gotID, gotHas := GetAccountID(&Config{Path: filepath.Join(root, "wrangler.jsonc")}, "")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("CLOUDFLARE_ACCOUNT_ID", "")
+			t.Setenv("WRANGLER_CACHE_DIR", "")
 
-	if gotID != "cached-account-123" || !gotHas {
-		t.Errorf("GetAccountID() = (%q, %v), want (%q, true)", gotID, gotHas, "cached-account-123")
+			root := t.TempDir()
+			writeFiles(t, root, tt.files)
+			t.Chdir(t.TempDir())
+
+			gotID, gotHas := GetAccountID(&Config{Path: filepath.Join(root, "wrangler.jsonc")}, "")
+
+			if gotID != tt.wantID || !gotHas {
+				t.Errorf("GetAccountID() = (%q, %v), want (%q, true)", gotID, gotHas, tt.wantID)
+			}
+		})
 	}
 }
 
@@ -161,5 +201,19 @@ func TestCacheFolder(t *testing.T) {
 				t.Errorf("cacheFolder() = %q, want %q", got, want)
 			}
 		})
+	}
+}
+
+func TestCacheFolder_CloudflareIgnoresWranglerCacheDir(t *testing.T) {
+	root := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(root, "node_modules"), 0o755); err != nil {
+		t.Fatalf("テスト用ディレクトリの作成に失敗: %v", err)
+	}
+	t.Setenv("WRANGLER_CACHE_DIR", filepath.Join(root, "custom-cache"))
+
+	got := cacheFolder(root, "cloudflare")
+
+	if want := filepath.Join(root, "node_modules", ".cache", "cloudflare"); got != want {
+		t.Errorf("cacheFolder() = %q, want %q", got, want)
 	}
 }

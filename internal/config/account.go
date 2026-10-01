@@ -34,7 +34,15 @@ func GetAccountID(config *Config, flagAccountID string) (string, bool) {
 }
 
 func getAccountFromCache(dir string) string {
-	data, err := os.ReadFile(filepath.Join(cacheFolder(dir, "wrangler"), "wrangler-account.json"))
+	if accountID := readAccountCache(filepath.Join(cacheFolder(dir, "cloudflare"), "cloudflare-account.json")); accountID != "" {
+		return accountID
+	}
+
+	return readAccountCache(filepath.Join(cacheFolder(dir, "wrangler"), "wrangler-account.json"))
+}
+
+func readAccountCache(path string) string {
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return ""
 	}

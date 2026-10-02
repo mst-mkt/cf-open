@@ -250,6 +250,7 @@ func TestToConfig(t *testing.T) {
 						{"type": "fetch", "pattern": "example.com/api/*", "zone": "example.com"},
 						{"type": "fetch", "pattern": "example.net/*", "zone": "zone-id"},
 						{"type": "queue", "name": "consumed-queue"},
+						{"type": "email", "addresses": ["*@example.com"]},
 						{"type": "scheduled", "schedule": "0 0 * * *"}
 					],
 					"tailConsumers": [{"worker": "tail-worker"}, {"worker": "streaming-tail-worker", "streaming": true}],
@@ -286,6 +287,7 @@ func TestToConfig(t *testing.T) {
 				Observability:           &ObservabilityConfig{Enabled: true},
 				Triggers:                &TriggersConfig{Crons: []string{"0 * * * *", "0 0 * * *"}},
 				Routes:                  []Route{{Pattern: "example.com/*"}, {Pattern: "example.com/api/*", ZoneName: "example.com"}, {Pattern: "example.net/*"}},
+				Addresses:               []string{"*@example.com"},
 				Queues:                  &QueuesConfig{Producers: []QueueProducer{{Binding: "QUEUE", Queue: "my-queue"}}, Consumers: []QueueConsumer{{Queue: "consumed-queue"}}},
 				DurableObjects:          &DurableObjectsConfig{Bindings: []DurableObjectBinding{{Name: "OBJECT", ClassName: "MyObject"}}},
 				Browser:                 &BrowserConfig{Binding: "BROWSER"},

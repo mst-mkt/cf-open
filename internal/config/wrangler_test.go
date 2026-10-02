@@ -116,6 +116,19 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で addresses を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "email-worker",
+				"addresses": ["*@example.com"]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if !reflect.DeepEqual(cfg.Addresses, []string{"*@example.com"}) {
+					t.Errorf("Addresses = %v, want %v", cfg.Addresses, []string{"*@example.com"})
+				}
+			},
+		},
+		{
 			name:     "JSON で Triggers を含む設定",
 			filename: "wrangler.json",
 			content: `{

@@ -509,6 +509,17 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			wantURLs:  nil,
 		},
 		{
+			name: "Email Routing - 一覧とドメインごとのページ",
+			config: &config.Config{
+				Addresses: []string{"*@example.com", "admin@example.com", "invalid"},
+			},
+			wantTypes: []ResourceType{ResourceTypeEmailRouting, ResourceTypeEmailRoutingDomain},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeEmailRouting:       "https://dash.cloudflare.com/acc/email-service/routing",
+				ResourceTypeEmailRoutingDomain: "https://dash.cloudflare.com/acc/example.com/email/routing",
+			},
+		},
+		{
 			name: "Routes - Worker のルートとゾーンの Workers Routes",
 			config: &config.Config{
 				Name: "my-worker",

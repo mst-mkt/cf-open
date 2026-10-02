@@ -22,6 +22,7 @@ type Config struct {
 	Triggers                *TriggersConfig          `json:"triggers" toml:"triggers"`
 	Routes                  []Route                  `json:"routes" toml:"routes"`
 	Route                   *Route                   `json:"route" toml:"route"`
+	Addresses               []string                 `json:"addresses" toml:"addresses"`
 	Queues                  *QueuesConfig            `json:"queues" toml:"queues"`
 	Workflows               []Workflow               `json:"workflows" toml:"workflows"`
 	DurableObjects          *DurableObjectsConfig    `json:"durable_objects" toml:"durable_objects"`

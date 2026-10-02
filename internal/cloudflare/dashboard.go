@@ -2,6 +2,7 @@ package cloudflare
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/mst-mkt/cf-open/internal/config"
 )
@@ -99,6 +100,36 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 			ID:          route.ZoneName,
 			Description: fmt.Sprintf("Workers Routes: %s", route.ZoneName),
 			URL:         BuildDashboardURL(accountID, routesURL, hasAccount),
+		})
+	}
+
+	// Email Routing
+	if len(cfg.Addresses) > 0 {
+		emailRoutingURL := "email-service/routing"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeEmailRouting,
+			Name:        "email-routing",
+			ID:          "email-routing",
+			Description: "Email Routing",
+			URL:         BuildDashboardURL(accountID, emailRoutingURL, hasAccount),
+		})
+	}
+
+	seenDomains := make(map[string]bool)
+	for _, address := range cfg.Addresses {
+		_, domain, ok := strings.Cut(address, "@")
+		if !ok || domain == "" || seenDomains[domain] {
+			continue
+		}
+		seenDomains[domain] = true
+
+		domainURL := fmt.Sprintf("%s/email/routing", domain)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeEmailRoutingDomain,
+			Name:        domain,
+			ID:          domain,
+			Description: fmt.Sprintf("Email Routing: %s", domain),
+			URL:         BuildDashboardURL(accountID, domainURL, hasAccount),
 		})
 	}
 

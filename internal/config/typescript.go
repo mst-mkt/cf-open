@@ -65,11 +65,12 @@ func (w *workerReference) UnmarshalJSON(data []byte) error {
 }
 
 type workerTrigger struct {
-	Type     string `json:"type"`
-	Name     string `json:"name"`
-	Schedule string `json:"schedule"`
-	Pattern  string `json:"pattern"`
-	Zone     string `json:"zone"`
+	Type      string   `json:"type"`
+	Name      string   `json:"name"`
+	Schedule  string   `json:"schedule"`
+	Pattern   string   `json:"pattern"`
+	Zone      string   `json:"zone"`
+	Addresses []string `json:"addresses"`
 }
 
 type workerExport struct {
@@ -198,6 +199,7 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		Observability:  worker.Observability,
 		Triggers:       cronTriggers(worker.Triggers),
 		Routes:         fetchRoutes(worker.Triggers),
+		Addresses:      emailAddresses(worker.Triggers),
 		Queues:         queuesConfig(env, worker.Triggers),
 		Workflows:      workflows(worker),
 		DurableObjects: durableObjects(worker),
@@ -326,6 +328,18 @@ func tailConsumers(consumers []workerTailConsumer, streaming bool) []TailConsume
 	}
 
 	return collected
+}
+
+func emailAddresses(triggers []workerTrigger) []string {
+	var addresses []string
+
+	for _, trigger := range triggers {
+		if trigger.Type == "email" {
+			addresses = append(addresses, trigger.Addresses...)
+		}
+	}
+
+	return addresses
 }
 
 func fetchRoutes(triggers []workerTrigger) []Route {

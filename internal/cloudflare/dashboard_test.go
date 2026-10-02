@@ -364,6 +364,19 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Email Sending - 複数の binding をまとめる",
+			config: &config.Config{
+				SendEmail: []config.SendEmail{
+					{Name: "EMAIL1"},
+					{Name: "EMAIL2"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeEmailSending},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeEmailSending: "https://dash.cloudflare.com/acc/email-service/sending",
+			},
+		},
+		{
 			name: "Images",
 			config: &config.Config{
 				Images: &config.ImagesConfig{Binding: "MY_IMAGES"},
@@ -434,6 +447,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				AISearch:                []config.AISearchInstance{{Binding: "SEARCH", InstanceName: "instance"}},
 				AISearchNamespaces:      []config.AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "namespace"}},
 				AnalyticsEngineDatasets: []config.AnalyticsEngineDataset{{Binding: "EVENTS", Dataset: "dataset"}},
+				SendEmail:               []config.SendEmail{{Name: "EMAIL"}},
 				Images:                  &config.ImagesConfig{Binding: "IMAGES"},
 				VPCServices:             []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
 				Triggers:                &config.TriggersConfig{Crons: []string{"* * * * *"}},
@@ -451,6 +465,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeAISearch,
 				ResourceTypeAISearchNamespace,
 				ResourceTypeAnalyticsEngine,
+				ResourceTypeEmailSending,
 				ResourceTypeVPC,
 				ResourceTypeR2,
 				ResourceTypeKV,

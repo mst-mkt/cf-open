@@ -252,6 +252,25 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で send_email を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "email-worker",
+				"send_email": [
+					{"name": "EMAIL"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.SendEmail) != 1 {
+					t.Errorf("len(SendEmail) = %d, want 1", len(cfg.SendEmail))
+					return
+				}
+				if cfg.SendEmail[0].Name != "EMAIL" {
+					t.Errorf("SendEmail[0].Name = %q, want %q", cfg.SendEmail[0].Name, "EMAIL")
+				}
+			},
+		},
+		{
 			name:     "JSON で Analytics Engine を含む設定",
 			filename: "wrangler.json",
 			content: `{

@@ -16,6 +16,7 @@ const (
 	ResourceTypeAISearch          ResourceType = "ai_search"
 	ResourceTypeAISearchNamespace ResourceType = "ai_search_namespace"
 	ResourceTypeAnalyticsEngine   ResourceType = "analytics_engine"
+	ResourceTypeEmailSending      ResourceType = "email_sending"
 	ResourceTypeVPC               ResourceType = "vpc"
 	ResourceTypeR2                ResourceType = "r2"
 	ResourceTypeKV                ResourceType = "kv"

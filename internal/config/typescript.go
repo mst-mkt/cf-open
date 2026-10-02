@@ -184,6 +184,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		AnalyticsEngineDatasets: collectBindings(env, "analytics-engine-dataset", func(binding string, dataset workerBinding) (AnalyticsEngineDataset, bool) {
 			return AnalyticsEngineDataset{Binding: binding, Dataset: dataset.Name}, true
 		}),
+		SendEmail: collectBindings(env, "send-email", func(binding string, _ workerBinding) (SendEmail, bool) {
+			return SendEmail{Name: binding}, true
+		}),
 		VPCServices: collectBindings(env, "vpc-service", func(binding string, service workerBinding) (VPCService, bool) {
 			return VPCService{Binding: binding, ServiceID: service.ID}, service.ID != ""
 		}),

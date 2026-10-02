@@ -28,6 +28,7 @@ type Config struct {
 	AISearch                []AISearchInstance       `json:"ai_search" toml:"ai_search"`
 	AISearchNamespaces      []AISearchNamespace      `json:"ai_search_namespaces" toml:"ai_search_namespaces"`
 	AnalyticsEngineDatasets []AnalyticsEngineDataset `json:"analytics_engine_datasets" toml:"analytics_engine_datasets"`
+	SendEmail               []SendEmail              `json:"send_email" toml:"send_email"`
 	VPCServices             []VPCService             `json:"vpc_services" toml:"vpc_services"`
 	R2Buckets               []R2Bucket               `json:"r2_buckets" toml:"r2_buckets"`
 	KVNamespaces            []KVNamespace            `json:"kv_namespaces" toml:"kv_namespaces"`
@@ -97,6 +98,10 @@ type AISearchInstance struct {
 type AISearchNamespace struct {
 	Binding   string `json:"binding" toml:"binding"`
 	Namespace string `json:"namespace" toml:"namespace"`
+}
+
+type SendEmail struct {
+	Name string `json:"name" toml:"name"`
 }
 
 type AnalyticsEngineDataset struct {

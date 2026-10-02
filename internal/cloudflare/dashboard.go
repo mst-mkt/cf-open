@@ -180,6 +180,19 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Email Sending
+	// The detail page is addressed by zone and domain IDs, which the config does not have, so open the list.
+	if len(cfg.SendEmail) > 0 {
+		sendEmailURL := "email-service/sending"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeEmailSending,
+			Name:        "email-sending",
+			ID:          "email-sending",
+			Description: "Email Sending",
+			URL:         BuildDashboardURL(accountID, sendEmailURL, hasAccount),
+		})
+	}
+
 	// VPC
 	for _, service := range cfg.VPCServices {
 		vpcURL := fmt.Sprintf("workers/vpc/services/%s", service.ServiceID)

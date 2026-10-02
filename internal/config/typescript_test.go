@@ -265,6 +265,7 @@ func TestToConfig(t *testing.T) {
 						"SEARCH": {"type": "ai-search", "name": "my-instance"},
 						"SEARCH_NAMESPACE": {"type": "ai-search-namespace", "namespace": "my-namespace"},
 						"EVENTS": {"type": "analytics-engine-dataset", "name": "my-dataset"},
+						"EMAIL": {"type": "send-email"},
 						"IMAGES": {"type": "images"},
 						"OBJECT": {"type": "durable-object", "worker": "my-worker", "exportName": "MyObject"}
 					}
@@ -283,6 +284,7 @@ func TestToConfig(t *testing.T) {
 				AISearch:                []AISearchInstance{{Binding: "SEARCH", InstanceName: "my-instance"}},
 				AISearchNamespaces:      []AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "my-namespace"}},
 				AnalyticsEngineDatasets: []AnalyticsEngineDataset{{Binding: "EVENTS", Dataset: "my-dataset"}},
+				SendEmail:               []SendEmail{{Name: "EMAIL"}},
 				VPCServices:             []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
 				R2Buckets:               []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
 				KVNamespaces:            []KVNamespace{{Binding: "CACHE", ID: "kv-id"}},

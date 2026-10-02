@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -85,6 +86,32 @@ compatibility_date = "2024-01-01"
 				}
 				if !cfg.Observability.Enabled {
 					t.Error("Observability.Enabled = false, want true")
+				}
+			},
+		},
+		{
+			name:     "JSON で文字列とオブジェクトが混ざった routes を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "route-worker",
+				"routes": [
+					"example.com/*",
+					{"pattern": "example.com/api/*", "zone_name": "example.com"},
+					{"pattern": "api.example.net", "custom_domain": true}
+				],
+				"route": {"pattern": "example.org/*", "zone_name": "example.org"}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				want := []Route{
+					{Pattern: "example.com/*"},
+					{Pattern: "example.com/api/*", ZoneName: "example.com"},
+					{Pattern: "api.example.net", CustomDomain: true},
+				}
+				if !reflect.DeepEqual(cfg.Routes, want) {
+					t.Errorf("Routes = %+v, want %+v", cfg.Routes, want)
+				}
+				if cfg.Route == nil || cfg.Route.ZoneName != "example.org" {
+					t.Errorf("Route = %+v, want zone_name %q", cfg.Route, "example.org")
 				}
 			},
 		},
@@ -615,6 +642,26 @@ queue = "my-queue"
 				}
 				if len(cfg.Queues.Producers) != 1 {
 					t.Errorf("len(Queues.Producers) = %d, want 1", len(cfg.Queues.Producers))
+				}
+			},
+		},
+		{
+			name:     "TOML で文字列とオブジェクトが混ざった routes を含む設定",
+			filename: "wrangler.toml",
+			content: `
+name = "route-toml-worker"
+routes = [
+  "example.com/*",
+  { pattern = "example.com/api/*", zone_name = "example.com" },
+]
+`,
+			validate: func(t *testing.T, cfg *Config) {
+				want := []Route{
+					{Pattern: "example.com/*"},
+					{Pattern: "example.com/api/*", ZoneName: "example.com"},
+				}
+				if !reflect.DeepEqual(cfg.Routes, want) {
+					t.Errorf("Routes = %+v, want %+v", cfg.Routes, want)
 				}
 			},
 		},

@@ -471,6 +471,34 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			wantURLs:  nil,
 		},
 		{
+			name: "Workers Routes - ゾーン名のあるルートをゾーンごとにまとめる",
+			config: &config.Config{
+				Routes: []config.Route{
+					{Pattern: "example.com/*"},
+					{Pattern: "example.com/api/*", ZoneName: "example.com"},
+					{Pattern: "example.com/app/*", ZoneName: "example.com"},
+					{Pattern: "api.example.net", ZoneName: "example.net", CustomDomain: true},
+				},
+				Route: &config.Route{Pattern: "example.org/*", ZoneName: "example.org"},
+			},
+			wantTypes: []ResourceType{ResourceTypeWorkersRoutes, ResourceTypeWorkersRoutes},
+			wantURLs:  nil,
+		},
+		{
+			name: "Routes - Worker のルートとゾーンの Workers Routes",
+			config: &config.Config{
+				Name: "my-worker",
+				Routes: []config.Route{
+					{Pattern: "example.com/*", ZoneName: "example.com"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeWorker, ResourceTypeRoutes, ResourceTypeWorkersRoutes},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeRoutes:        "https://dash.cloudflare.com/acc/workers/services/view/my-worker/production/triggers",
+				ResourceTypeWorkersRoutes: "https://dash.cloudflare.com/acc/example.com/workers",
+			},
+		},
+		{
 			name: "全リソース",
 			config: &config.Config{
 				Name:          "my-worker",

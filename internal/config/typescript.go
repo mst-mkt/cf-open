@@ -42,6 +42,8 @@ type workerTrigger struct {
 	Type     string `json:"type"`
 	Name     string `json:"name"`
 	Schedule string `json:"schedule"`
+	Pattern  string `json:"pattern"`
+	Zone     string `json:"zone"`
 }
 
 type workerExport struct {
@@ -168,6 +170,7 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		AccountID:      accountID,
 		Observability:  worker.Observability,
 		Triggers:       cronTriggers(worker.Triggers),
+		Routes:         fetchRoutes(worker.Triggers),
 		Queues:         queuesConfig(env, worker.Triggers),
 		Workflows:      workflows(worker),
 		DurableObjects: durableObjects(worker),
@@ -279,6 +282,26 @@ func cronTriggers(triggers []workerTrigger) *TriggersConfig {
 	}
 
 	return &TriggersConfig{Crons: crons}
+}
+
+func fetchRoutes(triggers []workerTrigger) []Route {
+	var routes []Route
+
+	for _, trigger := range triggers {
+		if trigger.Type != "fetch" || trigger.Pattern == "" {
+			continue
+		}
+
+		route := Route{Pattern: trigger.Pattern}
+		// cf treats a zone without a dot as a zone ID.
+		if strings.Contains(trigger.Zone, ".") {
+			route.ZoneName = trigger.Zone
+		}
+
+		routes = append(routes, route)
+	}
+
+	return routes
 }
 
 func queuesConfig(env map[string]workerBinding, triggers []workerTrigger) *QueuesConfig {

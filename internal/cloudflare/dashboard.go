@@ -68,6 +68,40 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Workers Routes
+	routes := cfg.Routes
+	if cfg.Route != nil {
+		routes = append(routes, *cfg.Route)
+	}
+
+	if cfg.Name != "" && !isPages && len(routes) > 0 {
+		triggersURL := fmt.Sprintf("workers/services/view/%s/production/triggers", cfg.Name)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeRoutes,
+			Name:        cfg.Name,
+			ID:          cfg.Name,
+			Description: fmt.Sprintf("Routes: %s", cfg.Name),
+			URL:         BuildDashboardURL(accountID, triggersURL, hasAccount),
+		})
+	}
+
+	seenZones := make(map[string]bool)
+	for _, route := range routes {
+		if route.ZoneName == "" || route.CustomDomain || seenZones[route.ZoneName] {
+			continue
+		}
+		seenZones[route.ZoneName] = true
+
+		routesURL := fmt.Sprintf("%s/workers", route.ZoneName)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeWorkersRoutes,
+			Name:        route.ZoneName,
+			ID:          route.ZoneName,
+			Description: fmt.Sprintf("Workers Routes: %s", route.ZoneName),
+			URL:         BuildDashboardURL(accountID, routesURL, hasAccount),
+		})
+	}
+
 	// Queues
 	// The detail page is addressed by queue ID, not the name in the config, so open the list.
 	if cfg.Queues != nil && (len(cfg.Queues.Producers) > 0 || len(cfg.Queues.Consumers) > 0) {

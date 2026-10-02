@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -19,6 +20,8 @@ type Config struct {
 
 	Observability           *ObservabilityConfig     `json:"observability" toml:"observability"`
 	Triggers                *TriggersConfig          `json:"triggers" toml:"triggers"`
+	Routes                  []Route                  `json:"routes" toml:"routes"`
+	Route                   *Route                   `json:"route" toml:"route"`
 	Queues                  *QueuesConfig            `json:"queues" toml:"queues"`
 	Workflows               []Workflow               `json:"workflows" toml:"workflows"`
 	DurableObjects          *DurableObjectsConfig    `json:"durable_objects" toml:"durable_objects"`
@@ -49,6 +52,34 @@ type ObservabilityConfig struct {
 
 type TriggersConfig struct {
 	Crons []string `json:"crons" toml:"crons"`
+}
+
+type Route struct {
+	Pattern      string `json:"pattern" toml:"pattern"`
+	ZoneName     string `json:"zone_name" toml:"zone_name"`
+	CustomDomain bool   `json:"custom_domain" toml:"custom_domain"`
+}
+
+func (r *Route) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &r.Pattern); err == nil {
+		return nil
+	}
+
+	type route Route
+	return json.Unmarshal(data, (*route)(r))
+}
+
+func (r *Route) UnmarshalTOML(data any) error {
+	switch value := data.(type) {
+	case string:
+		r.Pattern = value
+	case map[string]any:
+		r.Pattern, _ = value["pattern"].(string)
+		r.ZoneName, _ = value["zone_name"].(string)
+		r.CustomDomain, _ = value["custom_domain"].(bool)
+	}
+
+	return nil
 }
 
 type QueuesConfig struct {

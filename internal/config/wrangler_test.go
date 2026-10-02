@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -89,6 +90,58 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で文字列とオブジェクトが混ざった routes を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "route-worker",
+				"routes": [
+					"example.com/*",
+					{"pattern": "example.com/api/*", "zone_name": "example.com"},
+					{"pattern": "api.example.net", "custom_domain": true}
+				],
+				"route": {"pattern": "example.org/*", "zone_name": "example.org"}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				want := []Route{
+					{Pattern: "example.com/*"},
+					{Pattern: "example.com/api/*", ZoneName: "example.com"},
+					{Pattern: "api.example.net", CustomDomain: true},
+				}
+				if !reflect.DeepEqual(cfg.Routes, want) {
+					t.Errorf("Routes = %+v, want %+v", cfg.Routes, want)
+				}
+				if cfg.Route == nil || cfg.Route.ZoneName != "example.org" {
+					t.Errorf("Route = %+v, want zone_name %q", cfg.Route, "example.org")
+				}
+			},
+		},
+		{
+			name:     "JSON で Logpush を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "logpush-worker",
+				"logpush": true
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if !cfg.Logpush {
+					t.Error("Logpush = false, want true")
+				}
+			},
+		},
+		{
+			name:     "JSON で addresses を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "email-worker",
+				"addresses": ["*@example.com"]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if !reflect.DeepEqual(cfg.Addresses, []string{"*@example.com"}) {
+					t.Errorf("Addresses = %v, want %v", cfg.Addresses, []string{"*@example.com"})
+				}
+			},
+		},
+		{
 			name:     "JSON で Triggers を含む設定",
 			filename: "wrangler.json",
 			content: `{
@@ -130,6 +183,31 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Queue consumer を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "queue-worker",
+				"queues": {
+					"consumers": [
+						{"queue": "my-queue"}
+					]
+				}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.Queues == nil {
+					t.Error("Queues is nil")
+					return
+				}
+				if len(cfg.Queues.Consumers) != 1 {
+					t.Errorf("len(Queues.Consumers) = %d, want 1", len(cfg.Queues.Consumers))
+					return
+				}
+				if cfg.Queues.Consumers[0].Queue != "my-queue" {
+					t.Errorf("Queues.Consumers[0].Queue = %q, want %q", cfg.Queues.Consumers[0].Queue, "my-queue")
+				}
+			},
+		},
+		{
 			name:     "JSON で Workflows を含む設定",
 			filename: "wrangler.json",
 			content: `{
@@ -145,6 +223,50 @@ compatibility_date = "2024-01-01"
 				}
 				if cfg.Workflows[0].Name != "my-workflow" {
 					t.Errorf("Workflows[0].Name = %q, want %q", cfg.Workflows[0].Name, "my-workflow")
+				}
+			},
+		},
+		{
+			name:     "JSON で Containers を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "container-worker",
+				"containers": [
+					{"class_name": "MyContainer", "image": "./Dockerfile"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Containers) != 1 {
+					t.Errorf("len(Containers) = %d, want 1", len(cfg.Containers))
+					return
+				}
+				if cfg.Containers[0].ClassName != "MyContainer" {
+					t.Errorf("Containers[0].ClassName = %q, want %q", cfg.Containers[0].ClassName, "MyContainer")
+				}
+			},
+		},
+		{
+			name:     "JSON で Durable Objects を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "do-worker",
+				"durable_objects": {
+					"bindings": [
+						{"name": "MY_OBJECT", "class_name": "MyObject"}
+					]
+				}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.DurableObjects == nil {
+					t.Error("DurableObjects is nil")
+					return
+				}
+				if len(cfg.DurableObjects.Bindings) != 1 {
+					t.Errorf("len(DurableObjects.Bindings) = %d, want 1", len(cfg.DurableObjects.Bindings))
+					return
+				}
+				if cfg.DurableObjects.Bindings[0].ClassName != "MyObject" {
+					t.Errorf("DurableObjects.Bindings[0].ClassName = %q, want %q", cfg.DurableObjects.Bindings[0].ClassName, "MyObject")
 				}
 			},
 		},
@@ -166,6 +288,118 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Stream を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "stream-worker",
+				"stream": {"binding": "STREAM"}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.Stream == nil {
+					t.Error("Stream is nil")
+					return
+				}
+				if cfg.Stream.Binding != "STREAM" {
+					t.Errorf("Stream.Binding = %q, want %q", cfg.Stream.Binding, "STREAM")
+				}
+			},
+		},
+		{
+			name:     "JSON で Workers AI を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "ai-worker",
+				"ai": {"binding": "AI"}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.AI == nil {
+					t.Error("AI is nil")
+					return
+				}
+				if cfg.AI.Binding != "AI" {
+					t.Errorf("AI.Binding = %q, want %q", cfg.AI.Binding, "AI")
+				}
+			},
+		},
+		{
+			name:     "JSON で send_email を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "email-worker",
+				"send_email": [
+					{"name": "EMAIL"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.SendEmail) != 1 {
+					t.Errorf("len(SendEmail) = %d, want 1", len(cfg.SendEmail))
+					return
+				}
+				if cfg.SendEmail[0].Name != "EMAIL" {
+					t.Errorf("SendEmail[0].Name = %q, want %q", cfg.SendEmail[0].Name, "EMAIL")
+				}
+			},
+		},
+		{
+			name:     "JSON で Analytics Engine を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "analytics-worker",
+				"analytics_engine_datasets": [
+					{"binding": "EVENTS", "dataset": "my-dataset"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.AnalyticsEngineDatasets) != 1 {
+					t.Errorf("len(AnalyticsEngineDatasets) = %d, want 1", len(cfg.AnalyticsEngineDatasets))
+					return
+				}
+				if cfg.AnalyticsEngineDatasets[0].Dataset != "my-dataset" {
+					t.Errorf("AnalyticsEngineDatasets[0].Dataset = %q, want %q", cfg.AnalyticsEngineDatasets[0].Dataset, "my-dataset")
+				}
+			},
+		},
+		{
+			name:     "JSON で Artifacts を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "artifacts-worker",
+				"artifacts": [
+					{"binding": "ARTIFACTS", "namespace": "my-artifacts"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Artifacts) != 1 || cfg.Artifacts[0].Namespace != "my-artifacts" {
+					t.Errorf("Artifacts = %+v, want my-artifacts", cfg.Artifacts)
+				}
+			},
+		},
+		{
+			name:     "JSON で AI Search を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "ai-search-worker",
+				"ai_search": [
+					{"binding": "SEARCH", "instance_name": "my-instance"}
+				],
+				"ai_search_namespaces": [
+					{"binding": "SEARCH_NAMESPACE", "namespace": "my-namespace"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.AISearch) != 1 || len(cfg.AISearchNamespaces) != 1 {
+					t.Errorf("len(AISearch) = %d, len(AISearchNamespaces) = %d, want 1 and 1", len(cfg.AISearch), len(cfg.AISearchNamespaces))
+					return
+				}
+				if cfg.AISearch[0].InstanceName != "my-instance" {
+					t.Errorf("AISearch[0].InstanceName = %q, want %q", cfg.AISearch[0].InstanceName, "my-instance")
+				}
+				if cfg.AISearchNamespaces[0].Namespace != "my-namespace" {
+					t.Errorf("AISearchNamespaces[0].Namespace = %q, want %q", cfg.AISearchNamespaces[0].Namespace, "my-namespace")
+				}
+			},
+		},
+		{
 			name:     "JSON で VPC Services を含む設定",
 			filename: "wrangler.json",
 			content: `{
@@ -181,6 +415,75 @@ compatibility_date = "2024-01-01"
 				}
 				if cfg.VPCServices[0].ServiceID != "vpc-service-id" {
 					t.Errorf("VPCServices[0].ServiceID = %q, want %q", cfg.VPCServices[0].ServiceID, "vpc-service-id")
+				}
+			},
+		},
+		{
+			name:     "JSON で Service Binding と Tail Worker を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "service-worker",
+				"services": [
+					{"binding": "API", "service": "api-worker"}
+				],
+				"tail_consumers": [
+					{"service": "tail-worker"}
+				],
+				"streaming_tail_consumers": [
+					{"service": "streaming-tail-worker"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Services) != 1 || cfg.Services[0].Service != "api-worker" {
+					t.Errorf("Services = %+v, want api-worker", cfg.Services)
+				}
+				if len(cfg.TailConsumers) != 1 || cfg.TailConsumers[0].Service != "tail-worker" {
+					t.Errorf("TailConsumers = %+v, want tail-worker", cfg.TailConsumers)
+				}
+				if len(cfg.StreamingTailConsumers) != 1 || cfg.StreamingTailConsumers[0].Service != "streaming-tail-worker" {
+					t.Errorf("StreamingTailConsumers = %+v, want streaming-tail-worker", cfg.StreamingTailConsumers)
+				}
+			},
+		},
+		{
+			name:     "JSON で Flagship を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "flagship-worker",
+				"flagship": [
+					{"binding": "FLAGS", "app_id": "app-id"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Flagship) != 1 {
+					t.Errorf("len(Flagship) = %d, want 1", len(cfg.Flagship))
+					return
+				}
+				if cfg.Flagship[0].AppID != "app-id" {
+					t.Errorf("Flagship[0].AppID = %q, want %q", cfg.Flagship[0].AppID, "app-id")
+				}
+			},
+		},
+		{
+			name:     "JSON で VPC Networks を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "vpc-worker",
+				"vpc_networks": [
+					{"binding": "TUNNEL_NETWORK", "tunnel_id": "tunnel-id"},
+					{"binding": "MESH_NETWORK", "network_id": "network-id"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.VPCNetworks) != 2 {
+					t.Errorf("len(VPCNetworks) = %d, want 2", len(cfg.VPCNetworks))
+					return
+				}
+				if cfg.VPCNetworks[0].TunnelID != "tunnel-id" {
+					t.Errorf("VPCNetworks[0].TunnelID = %q, want %q", cfg.VPCNetworks[0].TunnelID, "tunnel-id")
+				}
+				if cfg.VPCNetworks[1].NetworkID != "network-id" {
+					t.Errorf("VPCNetworks[1].NetworkID = %q, want %q", cfg.VPCNetworks[1].NetworkID, "network-id")
 				}
 			},
 		},
@@ -254,6 +557,25 @@ compatibility_date = "2024-01-01"
 				}
 				if cfg.D1Databases[0].DatabaseID != "db-123" {
 					t.Errorf("D1Databases[0].DatabaseID = %q, want %q", cfg.D1Databases[0].DatabaseID, "db-123")
+				}
+			},
+		},
+		{
+			name:     "JSON で Hyperdrive を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "hyperdrive-worker",
+				"hyperdrive": [
+					{"binding": "HYPERDRIVE", "id": "hd-123"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Hyperdrive) != 1 {
+					t.Errorf("len(Hyperdrive) = %d, want 1", len(cfg.Hyperdrive))
+					return
+				}
+				if cfg.Hyperdrive[0].ID != "hd-123" {
+					t.Errorf("Hyperdrive[0].ID = %q, want %q", cfg.Hyperdrive[0].ID, "hd-123")
 				}
 			},
 		},
@@ -334,6 +656,34 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で K2 を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "k2-worker",
+				"k2": [
+					{"binding": "LOGS", "stream": "k2-stream-id"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.K2) != 1 || cfg.K2[0].Stream != "k2-stream-id" {
+					t.Errorf("K2 = %+v, want k2-stream-id", cfg.K2)
+				}
+			},
+		},
+		{
+			name:     "JSON で Media を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "media-worker",
+				"media": {"binding": "MEDIA"}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.Media == nil || cfg.Media.Binding != "MEDIA" {
+					t.Errorf("Media = %+v, want binding MEDIA", cfg.Media)
+				}
+			},
+		},
+		{
 			name:     "JSON で Images を含む設定",
 			filename: "wrangler.json",
 			content: `{
@@ -388,6 +738,26 @@ queue = "my-queue"
 				}
 				if len(cfg.Queues.Producers) != 1 {
 					t.Errorf("len(Queues.Producers) = %d, want 1", len(cfg.Queues.Producers))
+				}
+			},
+		},
+		{
+			name:     "TOML で文字列とオブジェクトが混ざった routes を含む設定",
+			filename: "wrangler.toml",
+			content: `
+name = "route-toml-worker"
+routes = [
+  "example.com/*",
+  { pattern = "example.com/api/*", zone_name = "example.com" },
+]
+`,
+			validate: func(t *testing.T, cfg *Config) {
+				want := []Route{
+					{Pattern: "example.com/*"},
+					{Pattern: "example.com/api/*", ZoneName: "example.com"},
+				}
+				if !reflect.DeepEqual(cfg.Routes, want) {
+					t.Errorf("Routes = %+v, want %+v", cfg.Routes, want)
 				}
 			},
 		},

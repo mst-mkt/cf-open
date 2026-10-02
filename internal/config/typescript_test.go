@@ -107,7 +107,7 @@ export default { worker: { name: 'lingering-worker' } }
 		{
 			name:    "containers だけの設定",
 			content: "export default { accountId: 'acc-123', containers: [{ name: 'app', image: { dockerfile: './Dockerfile' } }] }\n",
-			want:    &Config{AccountID: "acc-123"},
+			want:    &Config{AccountID: "acc-123", Containers: []Container{{Name: "app"}}},
 		},
 		{
 			name:    "worker が null の設定",
@@ -244,41 +244,96 @@ func TestToConfig(t *testing.T) {
 				"worker": {
 					"name": "my-worker",
 					"observability": {"enabled": true},
+					"logpush": true,
 					"triggers": [
 						{"type": "scheduled", "schedule": "0 * * * *"},
-						{"type": "fetch"},
+						{"type": "fetch", "pattern": "example.com/*"},
+						{"type": "fetch", "pattern": "example.com/api/*", "zone": "example.com"},
+						{"type": "fetch", "pattern": "example.net/*", "zone": "zone-id"},
+						{"type": "queue", "name": "consumed-queue"},
+						{"type": "email", "addresses": ["*@example.com"]},
 						{"type": "scheduled", "schedule": "0 0 * * *"}
 					],
+					"tailConsumers": [{"worker": "tail-worker"}, {"worker": "streaming-tail-worker", "streaming": true}],
 					"env": {
 						"DB": {"type": "d1", "name": "my-db", "id": "db-id"},
 						"BUCKET": {"type": "r2", "name": "my-bucket", "jurisdiction": "eu"},
 						"CACHE": {"type": "kv", "id": "kv-id"},
+						"HYPERDRIVE": {"type": "hyperdrive", "id": "hd-id"},
 						"QUEUE": {"type": "queue", "name": "my-queue"},
 						"INDEX": {"type": "vectorize", "name": "my-index"},
 						"PIPE": {"type": "pipeline", "name": "my-pipeline"},
+						"LOGS": {"type": "k2", "stream": "k2-stream-id"},
 						"SECRET": {"type": "secrets-store-secret", "storeId": "store-id", "secretName": "my-secret"},
 						"VPC": {"type": "vpc-service", "id": "vpc-id"},
+						"NETWORK": {"type": "vpc-network", "tunnelId": "tunnel-id"},
+						"FLAGS": {"type": "flagship", "id": "app-id"},
+						"API": {"type": "worker", "worker": "api-worker"},
+						"AUTH": {"type": "worker", "worker": {"name": "auth-worker"}, "exportName": "Auth"},
 						"BROWSER": {"type": "browser"},
-						"IMAGES": {"type": "images"}
+						"AI": {"type": "ai"},
+						"STREAM": {"type": "stream"},
+						"SEARCH": {"type": "ai-search", "name": "my-instance"},
+						"SEARCH_NAMESPACE": {"type": "ai-search-namespace", "namespace": "my-namespace"},
+						"ARTIFACTS": {"type": "artifacts", "namespace": "my-artifacts"},
+						"EVENTS": {"type": "analytics-engine-dataset", "name": "my-dataset"},
+						"EMAIL": {"type": "send-email"},
+						"IMAGES": {"type": "images"},
+						"MEDIA": {"type": "media"},
+						"OBJECT": {"type": "durable-object", "worker": "my-worker", "exportName": "MyObject"}
 					}
 				},
 				"accountId": "acc-123"
 			}`,
 			want: &Config{
-				Name:                "my-worker",
-				AccountID:           "acc-123",
-				Observability:       &ObservabilityConfig{Enabled: true},
-				Triggers:            &TriggersConfig{Crons: []string{"0 * * * *", "0 0 * * *"}},
-				Queues:              &QueuesConfig{Producers: []QueueProducer{{Binding: "QUEUE", Queue: "my-queue"}}},
-				Browser:             &BrowserConfig{Binding: "BROWSER"},
-				VPCServices:         []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
-				R2Buckets:           []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
-				KVNamespaces:        []KVNamespace{{Binding: "CACHE", ID: "kv-id"}},
-				D1Databases:         []D1Database{{Binding: "DB", DatabaseName: "my-db", DatabaseID: "db-id"}},
-				Pipelines:           []Pipeline{{Binding: "PIPE", Pipeline: "my-pipeline"}},
-				Vectorize:           []VectorizeIndex{{Binding: "INDEX", IndexName: "my-index"}},
-				SecretsStoreSecrets: []SecretsStoreSecret{{Binding: "SECRET", StoreID: "store-id", SecretName: "my-secret"}},
-				Images:              &ImagesConfig{Binding: "IMAGES"},
+				Name:                    "my-worker",
+				AccountID:               "acc-123",
+				Observability:           &ObservabilityConfig{Enabled: true},
+				Logpush:                 true,
+				Triggers:                &TriggersConfig{Crons: []string{"0 * * * *", "0 0 * * *"}},
+				Routes:                  []Route{{Pattern: "example.com/*"}, {Pattern: "example.com/api/*", ZoneName: "example.com"}, {Pattern: "example.net/*"}},
+				Addresses:               []string{"*@example.com"},
+				Queues:                  &QueuesConfig{Producers: []QueueProducer{{Binding: "QUEUE", Queue: "my-queue"}}, Consumers: []QueueConsumer{{Queue: "consumed-queue"}}},
+				DurableObjects:          &DurableObjectsConfig{Bindings: []DurableObjectBinding{{Name: "OBJECT", ClassName: "MyObject"}}},
+				Browser:                 &BrowserConfig{Binding: "BROWSER"},
+				AI:                      &AIConfig{Binding: "AI"},
+				Stream:                  &StreamConfig{Binding: "STREAM"},
+				AISearch:                []AISearchInstance{{Binding: "SEARCH", InstanceName: "my-instance"}},
+				AISearchNamespaces:      []AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "my-namespace"}},
+				Artifacts:               []Artifacts{{Binding: "ARTIFACTS", Namespace: "my-artifacts"}},
+				AnalyticsEngineDatasets: []AnalyticsEngineDataset{{Binding: "EVENTS", Dataset: "my-dataset"}},
+				SendEmail:               []SendEmail{{Name: "EMAIL"}},
+				VPCServices:             []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
+				VPCNetworks:             []VPCNetwork{{Binding: "NETWORK", TunnelID: "tunnel-id"}},
+				Flagship:                []Flagship{{Binding: "FLAGS", AppID: "app-id"}},
+				Services:                []Service{{Binding: "API", Service: "api-worker"}, {Binding: "AUTH", Service: "auth-worker"}},
+				TailConsumers:           []TailConsumer{{Service: "tail-worker"}},
+				StreamingTailConsumers:  []TailConsumer{{Service: "streaming-tail-worker"}},
+				R2Buckets:               []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
+				KVNamespaces:            []KVNamespace{{Binding: "CACHE", ID: "kv-id"}},
+				D1Databases:             []D1Database{{Binding: "DB", DatabaseName: "my-db", DatabaseID: "db-id"}},
+				Hyperdrive:              []Hyperdrive{{Binding: "HYPERDRIVE", ID: "hd-id"}},
+				Pipelines:               []Pipeline{{Binding: "PIPE", Pipeline: "my-pipeline"}},
+				K2:                      []K2{{Binding: "LOGS", Stream: "k2-stream-id"}},
+				Vectorize:               []VectorizeIndex{{Binding: "INDEX", IndexName: "my-index"}},
+				SecretsStoreSecrets:     []SecretsStoreSecret{{Binding: "SECRET", StoreID: "store-id", SecretName: "my-secret"}},
+				Images:                  &ImagesConfig{Binding: "IMAGES"},
+				Media:                   &MediaConfig{Binding: "MEDIA"},
+			},
+		},
+		{
+			name: "export だけで定義した Durable Object",
+			loaded: `{
+				"worker": {
+					"name": "my-worker",
+					"exports": {
+						"MyObject": {"type": "durable-object"}
+					}
+				}
+			}`,
+			want: &Config{
+				Name:           "my-worker",
+				DurableObjects: &DurableObjectsConfig{Bindings: []DurableObjectBinding{{ClassName: "MyObject"}}},
 			},
 		},
 		{
@@ -302,9 +357,7 @@ func TestToConfig(t *testing.T) {
 				"worker": {
 					"name": "my-worker",
 					"env": {
-						"AI": {"type": "ai"},
-						"HYPERDRIVE": {"type": "hyperdrive", "id": "hd-id"},
-						"DO": {"type": "durable-object", "workerName": "w", "exportName": "MyDurableObject"},
+						"GREETING": {"type": "text", "value": "hello"},
 						"DB": {"type": "d1", "id": "db-id"}
 					}
 				}
@@ -366,6 +419,7 @@ func TestToConfig(t *testing.T) {
 					{Binding: "REMOTE", Name: "remote-workflow", ClassName: "RemoteWorkflow"},
 					{Name: "unbound-workflow", ClassName: "UnboundWorkflow"},
 				},
+				DurableObjects: &DurableObjectsConfig{Bindings: []DurableObjectBinding{{ClassName: "Counter"}}},
 			},
 		},
 		{

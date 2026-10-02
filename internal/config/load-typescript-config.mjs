@@ -67,7 +67,11 @@ const resolveConfig = async (configPath, ctx) => {
   const worker = root.worker === undefined ? undefined : await unwrap(root.worker, ctx);
   if (worker != null && !isRecord(worker)) throw new Error("the worker must be an object");
 
-  return { accountId: root.accountId, worker };
+  const containers = Array.isArray(root.containers)
+    ? (await Promise.all(root.containers.map((container) => unwrap(container, ctx)))).filter(isRecord)
+    : undefined;
+
+  return { accountId: root.accountId, worker, containers };
 };
 
 const main = async () => {

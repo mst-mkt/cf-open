@@ -127,6 +127,18 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Hyperdrive",
+			config: &config.Config{
+				Hyperdrive: []config.Hyperdrive{
+					{Binding: "MY_HYPERDRIVE", ID: "hd-id"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeHyperdrive},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeHyperdrive: "https://dash.cloudflare.com/acc/workers/hyperdrive/hd-id",
+			},
+		},
+		{
 			name: "R2 Bucket",
 			config: &config.Config{
 				R2Buckets: []config.R2Bucket{
@@ -180,6 +192,20 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Queue - consumer のみ",
+			config: &config.Config{
+				Queues: &config.QueuesConfig{
+					Consumers: []config.QueueConsumer{
+						{Queue: "my-queue"},
+					},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeQueue},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeQueue: "https://dash.cloudflare.com/acc/workers/queues",
+			},
+		},
+		{
 			name: "Workflow",
 			config: &config.Config{
 				Workflows: []config.Workflow{
@@ -192,6 +218,34 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Durable Objects - 複数の class をまとめる",
+			config: &config.Config{
+				DurableObjects: &config.DurableObjectsConfig{
+					Bindings: []config.DurableObjectBinding{
+						{Name: "OBJECT1", ClassName: "Object1"},
+						{Name: "OBJECT2", ClassName: "Object2"},
+					},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeDurableObjects},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeDurableObjects: "https://dash.cloudflare.com/acc/workers/durable-objects",
+			},
+		},
+		{
+			name: "Containers - 複数の container をまとめる",
+			config: &config.Config{
+				Containers: []config.Container{
+					{Name: "app-1"},
+					{Name: "app-2"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeContainers},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeContainers: "https://dash.cloudflare.com/acc/workers/containers",
+			},
+		},
+		{
 			name: "Vectorize",
 			config: &config.Config{
 				Vectorize: []config.VectorizeIndex{
@@ -201,6 +255,18 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			wantTypes: []ResourceType{ResourceTypeVectorize},
 			wantURLs: map[ResourceType]string{
 				ResourceTypeVectorize: "https://dash.cloudflare.com/acc/ai/vectorize/my-index",
+			},
+		},
+		{
+			name: "K2",
+			config: &config.Config{
+				K2: []config.K2{
+					{Binding: "LOGS", Stream: "k2-stream-id"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeK2},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeK2: "https://dash.cloudflare.com/acc/k2/k2-stream-id",
 			},
 		},
 		{
@@ -263,13 +329,105 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Workers AI",
+			config: &config.Config{
+				AI: &config.AIConfig{Binding: "AI"},
+			},
+			wantTypes: []ResourceType{ResourceTypeWorkersAI},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeWorkersAI: "https://dash.cloudflare.com/acc/ai/workers-ai",
+			},
+		},
+		{
+			name: "Stream",
+			config: &config.Config{
+				Stream: &config.StreamConfig{Binding: "STREAM"},
+			},
+			wantTypes: []ResourceType{ResourceTypeStream},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeStream: "https://dash.cloudflare.com/acc/stream/videos",
+			},
+		},
+		{
+			name: "AI Search",
+			config: &config.Config{
+				AISearch: []config.AISearchInstance{
+					{Binding: "SEARCH", InstanceName: "my-instance"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeAISearch},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeAISearch: "https://dash.cloudflare.com/acc/ai/ai-search/namespace/default/instance/my-instance/overview",
+			},
+		},
+		{
+			name: "AI Search Namespace",
+			config: &config.Config{
+				AISearchNamespaces: []config.AISearchNamespace{
+					{Binding: "SEARCH_NAMESPACE", Namespace: "my-namespace"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeAISearchNamespace},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeAISearchNamespace: "https://dash.cloudflare.com/acc/ai/ai-search?namespace=my-namespace",
+			},
+		},
+		{
+			name: "Artifacts",
+			config: &config.Config{
+				Artifacts: []config.Artifacts{
+					{Binding: "ARTIFACTS", Namespace: "my-artifacts"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeArtifacts},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeArtifacts: "https://dash.cloudflare.com/acc/workers/artifacts/namespaces/my-artifacts",
+			},
+		},
+		{
+			name: "Analytics Engine - 複数の dataset をまとめる",
+			config: &config.Config{
+				AnalyticsEngineDatasets: []config.AnalyticsEngineDataset{
+					{Binding: "EVENTS1", Dataset: "dataset-1"},
+					{Binding: "EVENTS2", Dataset: "dataset-2"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeAnalyticsEngine},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeAnalyticsEngine: "https://dash.cloudflare.com/acc/workers/analytics-engine",
+			},
+		},
+		{
+			name: "Email Sending - 複数の binding をまとめる",
+			config: &config.Config{
+				SendEmail: []config.SendEmail{
+					{Name: "EMAIL1"},
+					{Name: "EMAIL2"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeEmailSending},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeEmailSending: "https://dash.cloudflare.com/acc/email-service/sending",
+			},
+		},
+		{
 			name: "Images",
 			config: &config.Config{
 				Images: &config.ImagesConfig{Binding: "MY_IMAGES"},
 			},
 			wantTypes: []ResourceType{ResourceTypeImages},
 			wantURLs: map[ResourceType]string{
-				ResourceTypeImages: "https://dash.cloudflare.com/acc/images",
+				ResourceTypeImages: "https://dash.cloudflare.com/acc/images/hosted",
+			},
+		},
+		{
+			name: "Media",
+			config: &config.Config{
+				Media: &config.MediaConfig{Binding: "MEDIA"},
+			},
+			wantTypes: []ResourceType{ResourceTypeMedia},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeMedia: "https://dash.cloudflare.com/acc/media/transformations",
 			},
 		},
 		{
@@ -282,6 +440,68 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			wantTypes: []ResourceType{ResourceTypeVPC},
 			wantURLs: map[ResourceType]string{
 				ResourceTypeVPC: "https://dash.cloudflare.com/acc/workers/vpc/services/vpc-id",
+			},
+		},
+		{
+			name: "VPC Networks - tunnel_id の Tunnel も表示する",
+			config: &config.Config{
+				VPCNetworks: []config.VPCNetwork{
+					{Binding: "TUNNEL_NETWORK", TunnelID: "tunnel-id"},
+					{Binding: "MESH_NETWORK", NetworkID: "network-id"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeVPCNetworks, ResourceTypeTunnel},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeVPCNetworks: "https://dash.cloudflare.com/acc/workers/vpc/networks",
+				ResourceTypeTunnel:      "https://dash.cloudflare.com/acc/tunnels/tunnel-id/overview",
+			},
+		},
+		{
+			name: "Flagship",
+			config: &config.Config{
+				Flagship: []config.Flagship{
+					{Binding: "FLAGS", AppID: "app-id"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeFlagship},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeFlagship: "https://dash.cloudflare.com/acc/flagship/applications/app-id/overview",
+			},
+		},
+		{
+			name: "Flagship - app_id なしの場合は一覧を開く",
+			config: &config.Config{
+				Flagship: []config.Flagship{
+					{Binding: "FLAGS"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeFlagship},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeFlagship: "https://dash.cloudflare.com/acc/flagship",
+			},
+		},
+		{
+			name: "Service Binding - 同じ参照先をまとめる",
+			config: &config.Config{
+				Services: []config.Service{
+					{Binding: "API", Service: "api-worker"},
+					{Binding: "API_ADMIN", Service: "api-worker"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeService},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeService: "https://dash.cloudflare.com/acc/workers/services/view/api-worker/production",
+			},
+		},
+		{
+			name: "Tail Worker - 通常とストリーミングをまとめる",
+			config: &config.Config{
+				TailConsumers:          []config.TailConsumer{{Service: "tail-worker"}},
+				StreamingTailConsumers: []config.TailConsumer{{Service: "tail-worker"}},
+			},
+			wantTypes: []ResourceType{ResourceTypeTailWorker},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeTailWorker: "https://dash.cloudflare.com/acc/workers/services/view/tail-worker/production",
 			},
 		},
 		{
@@ -309,24 +529,99 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			wantURLs:  nil,
 		},
 		{
+			name: "Workers Routes - ゾーン名のあるルートをゾーンごとにまとめる",
+			config: &config.Config{
+				Routes: []config.Route{
+					{Pattern: "example.com/*"},
+					{Pattern: "example.com/api/*", ZoneName: "example.com"},
+					{Pattern: "example.com/app/*", ZoneName: "example.com"},
+					{Pattern: "api.example.net", ZoneName: "example.net", CustomDomain: true},
+				},
+				Route: &config.Route{Pattern: "example.org/*", ZoneName: "example.org"},
+			},
+			wantTypes: []ResourceType{ResourceTypeWorkersRoutes, ResourceTypeWorkersRoutes},
+			wantURLs:  nil,
+		},
+		{
+			name: "Logpush",
+			config: &config.Config{
+				Logpush: true,
+			},
+			wantTypes: []ResourceType{ResourceTypeLogpush},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeLogpush: "https://dash.cloudflare.com/acc/logs",
+			},
+		},
+		{
+			name: "Email Routing - 一覧とドメインごとのページ",
+			config: &config.Config{
+				Addresses: []string{"*@example.com", "admin@example.com", "invalid"},
+			},
+			wantTypes: []ResourceType{ResourceTypeEmailRouting, ResourceTypeEmailRoutingDomain},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeEmailRouting:       "https://dash.cloudflare.com/acc/email-service/routing",
+				ResourceTypeEmailRoutingDomain: "https://dash.cloudflare.com/acc/example.com/email/routing",
+			},
+		},
+		{
+			name: "Email Routing - サブドメインのアドレスは apex のゾーンを開く",
+			config: &config.Config{
+				Addresses: []string{"support@mail.example.co.jp", "*@example.co.jp"},
+			},
+			wantTypes: []ResourceType{ResourceTypeEmailRouting, ResourceTypeEmailRoutingDomain},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeEmailRouting:       "https://dash.cloudflare.com/acc/email-service/routing",
+				ResourceTypeEmailRoutingDomain: "https://dash.cloudflare.com/acc/example.co.jp/email/routing",
+			},
+		},
+		{
+			name: "Routes - Worker のルートとゾーンの Workers Routes",
+			config: &config.Config{
+				Name: "my-worker",
+				Routes: []config.Route{
+					{Pattern: "example.com/*", ZoneName: "example.com"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeWorker, ResourceTypeRoutes, ResourceTypeWorkersRoutes},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeRoutes:        "https://dash.cloudflare.com/acc/workers/services/view/my-worker/production/triggers",
+				ResourceTypeWorkersRoutes: "https://dash.cloudflare.com/acc/example.com/workers",
+			},
+		},
+		{
 			name: "全リソース",
 			config: &config.Config{
 				Name:          "my-worker",
 				Observability: &config.ObservabilityConfig{Enabled: true},
 				KVNamespaces:  []config.KVNamespace{{Binding: "KV", ID: "kv-id"}},
 				D1Databases:   []config.D1Database{{Binding: "DB", DatabaseName: "db", DatabaseID: "d1-id"}},
+				Hyperdrive:    []config.Hyperdrive{{Binding: "HD", ID: "hd-id"}},
 				R2Buckets:     []config.R2Bucket{{Binding: "R2", BucketName: "bucket"}},
 				Queues:        &config.QueuesConfig{Producers: []config.QueueProducer{{Binding: "Q", Queue: "queue"}}},
 				Workflows:     []config.Workflow{{Binding: "WF", Name: "workflow", ClassName: "WF"}},
 				Vectorize:     []config.VectorizeIndex{{Binding: "VEC", IndexName: "index"}},
 				Pipelines:     []config.Pipeline{{Binding: "PIPE", Pipeline: "pipeline"}},
+				K2:            []config.K2{{Binding: "LOGS", Stream: "k2-stream"}},
 				SecretsStoreSecrets: []config.SecretsStoreSecret{
 					{Binding: "SEC", StoreID: "store", SecretName: "secret"},
 				},
-				Browser:     &config.BrowserConfig{Binding: "BROWSER"},
-				Images:      &config.ImagesConfig{Binding: "IMAGES"},
-				VPCServices: []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
-				Triggers:    &config.TriggersConfig{Crons: []string{"* * * * *"}},
+				DurableObjects: &config.DurableObjectsConfig{
+					Bindings: []config.DurableObjectBinding{{Name: "DO", ClassName: "DO"}},
+				},
+				Containers:              []config.Container{{Name: "app"}},
+				Browser:                 &config.BrowserConfig{Binding: "BROWSER"},
+				AI:                      &config.AIConfig{Binding: "AI"},
+				Stream:                  &config.StreamConfig{Binding: "STREAM"},
+				AISearch:                []config.AISearchInstance{{Binding: "SEARCH", InstanceName: "instance"}},
+				AISearchNamespaces:      []config.AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "namespace"}},
+				AnalyticsEngineDatasets: []config.AnalyticsEngineDataset{{Binding: "EVENTS", Dataset: "dataset"}},
+				SendEmail:               []config.SendEmail{{Name: "EMAIL"}},
+				Images:                  &config.ImagesConfig{Binding: "IMAGES"},
+				Media:                   &config.MediaConfig{Binding: "MEDIA"},
+				VPCServices:             []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
+				VPCNetworks:             []config.VPCNetwork{{Binding: "NETWORK", TunnelID: "tunnel-id"}},
+				Flagship:                []config.Flagship{{Binding: "FLAGS", AppID: "app-id"}},
+				Triggers:                &config.TriggersConfig{Crons: []string{"* * * * *"}},
 			},
 			wantTypes: []ResourceType{
 				ResourceTypeWorker,
@@ -334,15 +629,29 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeCronTriggers,
 				ResourceTypeQueue,
 				ResourceTypeWorkflow,
+				ResourceTypeDurableObjects,
+				ResourceTypeContainers,
 				ResourceTypeBrowserRun,
+				ResourceTypeWorkersAI,
+				ResourceTypeStream,
+				ResourceTypeAISearch,
+				ResourceTypeAISearchNamespace,
+				ResourceTypeAnalyticsEngine,
+				ResourceTypeEmailSending,
 				ResourceTypeVPC,
+				ResourceTypeVPCNetworks,
+				ResourceTypeTunnel,
+				ResourceTypeFlagship,
 				ResourceTypeR2,
 				ResourceTypeKV,
 				ResourceTypeD1,
+				ResourceTypeHyperdrive,
 				ResourceTypePipeline,
+				ResourceTypeK2,
 				ResourceTypeVectorize,
 				ResourceTypeSecretsStore,
 				ResourceTypeImages,
+				ResourceTypeMedia,
 			},
 			wantURLs: nil,
 		},

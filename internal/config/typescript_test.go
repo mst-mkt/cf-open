@@ -262,6 +262,8 @@ func TestToConfig(t *testing.T) {
 						"VPC": {"type": "vpc-service", "id": "vpc-id"},
 						"BROWSER": {"type": "browser"},
 						"AI": {"type": "ai"},
+						"SEARCH": {"type": "ai-search", "name": "my-instance"},
+						"SEARCH_NAMESPACE": {"type": "ai-search-namespace", "namespace": "my-namespace"},
 						"IMAGES": {"type": "images"},
 						"OBJECT": {"type": "durable-object", "worker": "my-worker", "exportName": "MyObject"}
 					}
@@ -277,6 +279,8 @@ func TestToConfig(t *testing.T) {
 				DurableObjects:      &DurableObjectsConfig{Bindings: []DurableObjectBinding{{Name: "OBJECT", ClassName: "MyObject"}}},
 				Browser:             &BrowserConfig{Binding: "BROWSER"},
 				AI:                  &AIConfig{Binding: "AI"},
+				AISearch:            []AISearchInstance{{Binding: "SEARCH", InstanceName: "my-instance"}},
+				AISearchNamespaces:  []AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "my-namespace"}},
 				VPCServices:         []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
 				R2Buckets:           []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
 				KVNamespaces:        []KVNamespace{{Binding: "CACHE", ID: "kv-id"}},

@@ -53,6 +53,7 @@ type workerBinding struct {
 	ID           string `json:"id"`
 	Name         string `json:"name"`
 	Jurisdiction string `json:"jurisdiction"`
+	Namespace    string `json:"namespace"`
 	StoreID      string `json:"storeId"`
 	SecretName   string `json:"secretName"`
 	ExportName   string `json:"exportName"`
@@ -169,6 +170,12 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		}),
 		AI: firstBinding(env, "ai", func(binding string) AIConfig {
 			return AIConfig{Binding: binding}
+		}),
+		AISearch: collectBindings(env, "ai-search", func(binding string, instance workerBinding) (AISearchInstance, bool) {
+			return AISearchInstance{Binding: binding, InstanceName: instance.Name}, instance.Name != ""
+		}),
+		AISearchNamespaces: collectBindings(env, "ai-search-namespace", func(binding string, namespace workerBinding) (AISearchNamespace, bool) {
+			return AISearchNamespace{Binding: binding, Namespace: namespace.Namespace}, namespace.Namespace != ""
 		}),
 		VPCServices: collectBindings(env, "vpc-service", func(binding string, service workerBinding) (VPCService, bool) {
 			return VPCService{Binding: binding, ServiceID: service.ID}, service.ID != ""

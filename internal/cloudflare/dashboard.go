@@ -130,6 +130,30 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// AI Search
+	for _, instance := range cfg.AISearch {
+		aiSearchURL := fmt.Sprintf("ai/ai-search/namespace/default/instance/%s/overview", instance.InstanceName)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeAISearch,
+			Name:        instance.Binding,
+			ID:          instance.InstanceName,
+			Description: fmt.Sprintf("AI Search: %s", instance.InstanceName),
+			URL:         BuildDashboardURL(accountID, aiSearchURL, hasAccount),
+		})
+	}
+
+	// AI Search Namespaces
+	for _, namespace := range cfg.AISearchNamespaces {
+		namespaceURL := fmt.Sprintf("ai/ai-search?namespace=%s", namespace.Namespace)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeAISearchNamespace,
+			Name:        namespace.Binding,
+			ID:          namespace.Namespace,
+			Description: fmt.Sprintf("AI Search Namespace: %s", namespace.Namespace),
+			URL:         BuildDashboardURL(accountID, namespaceURL, hasAccount),
+		})
+	}
+
 	// VPC
 	for _, service := range cfg.VPCServices {
 		vpcURL := fmt.Sprintf("workers/vpc/services/%s", service.ServiceID)

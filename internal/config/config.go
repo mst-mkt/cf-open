@@ -24,6 +24,8 @@ type Config struct {
 	DurableObjects      *DurableObjectsConfig `json:"durable_objects" toml:"durable_objects"`
 	Browser             *BrowserConfig        `json:"browser" toml:"browser"`
 	AI                  *AIConfig             `json:"ai" toml:"ai"`
+	AISearch            []AISearchInstance    `json:"ai_search" toml:"ai_search"`
+	AISearchNamespaces  []AISearchNamespace   `json:"ai_search_namespaces" toml:"ai_search_namespaces"`
 	VPCServices         []VPCService          `json:"vpc_services" toml:"vpc_services"`
 	R2Buckets           []R2Bucket            `json:"r2_buckets" toml:"r2_buckets"`
 	KVNamespaces        []KVNamespace         `json:"kv_namespaces" toml:"kv_namespaces"`
@@ -78,6 +80,16 @@ type BrowserConfig struct {
 
 type AIConfig struct {
 	Binding string `json:"binding" toml:"binding"`
+}
+
+type AISearchInstance struct {
+	Binding      string `json:"binding" toml:"binding"`
+	InstanceName string `json:"instance_name" toml:"instance_name"`
+}
+
+type AISearchNamespace struct {
+	Binding   string `json:"binding" toml:"binding"`
+	Namespace string `json:"namespace" toml:"namespace"`
 }
 
 type VPCService struct {

@@ -314,6 +314,30 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "AI Search",
+			config: &config.Config{
+				AISearch: []config.AISearchInstance{
+					{Binding: "SEARCH", InstanceName: "my-instance"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeAISearch},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeAISearch: "https://dash.cloudflare.com/acc/ai/ai-search/namespace/default/instance/my-instance/overview",
+			},
+		},
+		{
+			name: "AI Search Namespace",
+			config: &config.Config{
+				AISearchNamespaces: []config.AISearchNamespace{
+					{Binding: "SEARCH_NAMESPACE", Namespace: "my-namespace"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeAISearchNamespace},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeAISearchNamespace: "https://dash.cloudflare.com/acc/ai/ai-search?namespace=my-namespace",
+			},
+		},
+		{
 			name: "Images",
 			config: &config.Config{
 				Images: &config.ImagesConfig{Binding: "MY_IMAGES"},
@@ -378,11 +402,13 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				DurableObjects: &config.DurableObjectsConfig{
 					Bindings: []config.DurableObjectBinding{{Name: "DO", ClassName: "DO"}},
 				},
-				Browser:     &config.BrowserConfig{Binding: "BROWSER"},
-				AI:          &config.AIConfig{Binding: "AI"},
-				Images:      &config.ImagesConfig{Binding: "IMAGES"},
-				VPCServices: []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
-				Triggers:    &config.TriggersConfig{Crons: []string{"* * * * *"}},
+				Browser:            &config.BrowserConfig{Binding: "BROWSER"},
+				AI:                 &config.AIConfig{Binding: "AI"},
+				AISearch:           []config.AISearchInstance{{Binding: "SEARCH", InstanceName: "instance"}},
+				AISearchNamespaces: []config.AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "namespace"}},
+				Images:             &config.ImagesConfig{Binding: "IMAGES"},
+				VPCServices:        []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
+				Triggers:           &config.TriggersConfig{Crons: []string{"* * * * *"}},
 			},
 			wantTypes: []ResourceType{
 				ResourceTypeWorker,
@@ -393,6 +419,8 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeDurableObjects,
 				ResourceTypeBrowserRun,
 				ResourceTypeWorkersAI,
+				ResourceTypeAISearch,
+				ResourceTypeAISearchNamespace,
 				ResourceTypeVPC,
 				ResourceTypeR2,
 				ResourceTypeKV,

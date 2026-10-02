@@ -233,6 +233,31 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で AI Search を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "ai-search-worker",
+				"ai_search": [
+					{"binding": "SEARCH", "instance_name": "my-instance"}
+				],
+				"ai_search_namespaces": [
+					{"binding": "SEARCH_NAMESPACE", "namespace": "my-namespace"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.AISearch) != 1 || len(cfg.AISearchNamespaces) != 1 {
+					t.Errorf("len(AISearch) = %d, len(AISearchNamespaces) = %d, want 1 and 1", len(cfg.AISearch), len(cfg.AISearchNamespaces))
+					return
+				}
+				if cfg.AISearch[0].InstanceName != "my-instance" {
+					t.Errorf("AISearch[0].InstanceName = %q, want %q", cfg.AISearch[0].InstanceName, "my-instance")
+				}
+				if cfg.AISearchNamespaces[0].Namespace != "my-namespace" {
+					t.Errorf("AISearchNamespaces[0].Namespace = %q, want %q", cfg.AISearchNamespaces[0].Namespace, "my-namespace")
+				}
+			},
+		},
+		{
 			name:     "JSON で VPC Services を含む設定",
 			filename: "wrangler.json",
 			content: `{

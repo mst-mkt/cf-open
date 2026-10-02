@@ -205,6 +205,34 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// VPC Networks
+	if len(cfg.VPCNetworks) > 0 {
+		vpcNetworksURL := "workers/vpc/networks"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeVPCNetworks,
+			Name:        "vpc-networks",
+			ID:          "vpc-networks",
+			Description: "VPC Networks",
+			URL:         BuildDashboardURL(accountID, vpcNetworksURL, hasAccount),
+		})
+	}
+
+	// Tunnels
+	for _, network := range cfg.VPCNetworks {
+		if network.TunnelID == "" {
+			continue
+		}
+
+		tunnelURL := fmt.Sprintf("tunnels/%s/overview", network.TunnelID)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeTunnel,
+			Name:        network.Binding,
+			ID:          network.TunnelID,
+			Description: fmt.Sprintf("Tunnel: %s", network.TunnelID),
+			URL:         BuildDashboardURL(accountID, tunnelURL, hasAccount),
+		})
+	}
+
 	// R2 Object Storage
 	for _, bucket := range cfg.R2Buckets {
 		jurisdiction := bucket.Jurisdiction

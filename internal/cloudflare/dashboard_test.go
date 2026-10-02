@@ -399,6 +399,20 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "VPC Networks - tunnel_id の Tunnel も表示する",
+			config: &config.Config{
+				VPCNetworks: []config.VPCNetwork{
+					{Binding: "TUNNEL_NETWORK", TunnelID: "tunnel-id"},
+					{Binding: "MESH_NETWORK", NetworkID: "network-id"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeVPCNetworks, ResourceTypeTunnel},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeVPCNetworks: "https://dash.cloudflare.com/acc/workers/vpc/networks",
+				ResourceTypeTunnel:      "https://dash.cloudflare.com/acc/tunnels/tunnel-id/overview",
+			},
+		},
+		{
 			name: "Cron Triggers",
 			config: &config.Config{
 				Name: "my-worker",
@@ -450,6 +464,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				SendEmail:               []config.SendEmail{{Name: "EMAIL"}},
 				Images:                  &config.ImagesConfig{Binding: "IMAGES"},
 				VPCServices:             []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
+				VPCNetworks:             []config.VPCNetwork{{Binding: "NETWORK", TunnelID: "tunnel-id"}},
 				Triggers:                &config.TriggersConfig{Crons: []string{"* * * * *"}},
 			},
 			wantTypes: []ResourceType{
@@ -467,6 +482,8 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeAnalyticsEngine,
 				ResourceTypeEmailSending,
 				ResourceTypeVPC,
+				ResourceTypeVPCNetworks,
+				ResourceTypeTunnel,
 				ResourceTypeR2,
 				ResourceTypeKV,
 				ResourceTypeD1,

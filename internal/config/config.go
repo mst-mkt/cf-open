@@ -30,6 +30,7 @@ type Config struct {
 	AnalyticsEngineDatasets []AnalyticsEngineDataset `json:"analytics_engine_datasets" toml:"analytics_engine_datasets"`
 	SendEmail               []SendEmail              `json:"send_email" toml:"send_email"`
 	VPCServices             []VPCService             `json:"vpc_services" toml:"vpc_services"`
+	VPCNetworks             []VPCNetwork             `json:"vpc_networks" toml:"vpc_networks"`
 	R2Buckets               []R2Bucket               `json:"r2_buckets" toml:"r2_buckets"`
 	KVNamespaces            []KVNamespace            `json:"kv_namespaces" toml:"kv_namespaces"`
 	D1Databases             []D1Database             `json:"d1_databases" toml:"d1_databases"`
@@ -112,6 +113,12 @@ type AnalyticsEngineDataset struct {
 type VPCService struct {
 	Binding   string `json:"binding" toml:"binding"`
 	ServiceID string `json:"service_id" toml:"service_id"`
+}
+
+type VPCNetwork struct {
+	Binding   string `json:"binding" toml:"binding"`
+	TunnelID  string `json:"tunnel_id" toml:"tunnel_id"`
+	NetworkID string `json:"network_id" toml:"network_id"`
 }
 
 type R2Bucket struct {

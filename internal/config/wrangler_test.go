@@ -334,6 +334,29 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で VPC Networks を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "vpc-worker",
+				"vpc_networks": [
+					{"binding": "TUNNEL_NETWORK", "tunnel_id": "tunnel-id"},
+					{"binding": "MESH_NETWORK", "network_id": "network-id"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.VPCNetworks) != 2 {
+					t.Errorf("len(VPCNetworks) = %d, want 2", len(cfg.VPCNetworks))
+					return
+				}
+				if cfg.VPCNetworks[0].TunnelID != "tunnel-id" {
+					t.Errorf("VPCNetworks[0].TunnelID = %q, want %q", cfg.VPCNetworks[0].TunnelID, "tunnel-id")
+				}
+				if cfg.VPCNetworks[1].NetworkID != "network-id" {
+					t.Errorf("VPCNetworks[1].NetworkID = %q, want %q", cfg.VPCNetworks[1].NetworkID, "network-id")
+				}
+			},
+		},
+		{
 			name:     "JSON で R2 バケットを含む設定",
 			filename: "wrangler.json",
 			content: `{

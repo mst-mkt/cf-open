@@ -18,6 +18,8 @@ const (
 	ResourceTypeAnalyticsEngine   ResourceType = "analytics_engine"
 	ResourceTypeEmailSending      ResourceType = "email_sending"
 	ResourceTypeVPC               ResourceType = "vpc"
+	ResourceTypeVPCNetworks       ResourceType = "vpc_networks"
+	ResourceTypeTunnel            ResourceType = "tunnel"
 	ResourceTypeR2                ResourceType = "r2"
 	ResourceTypeKV                ResourceType = "kv"
 	ResourceTypeD1                ResourceType = "d1"

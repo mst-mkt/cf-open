@@ -55,6 +55,8 @@ type workerBinding struct {
 	Name         string `json:"name"`
 	Jurisdiction string `json:"jurisdiction"`
 	Namespace    string `json:"namespace"`
+	TunnelID     string `json:"tunnelId"`
+	NetworkID    string `json:"networkId"`
 	StoreID      string `json:"storeId"`
 	SecretName   string `json:"secretName"`
 	ExportName   string `json:"exportName"`
@@ -189,6 +191,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		}),
 		VPCServices: collectBindings(env, "vpc-service", func(binding string, service workerBinding) (VPCService, bool) {
 			return VPCService{Binding: binding, ServiceID: service.ID}, service.ID != ""
+		}),
+		VPCNetworks: collectBindings(env, "vpc-network", func(binding string, network workerBinding) (VPCNetwork, bool) {
+			return VPCNetwork{Binding: binding, TunnelID: network.TunnelID, NetworkID: network.NetworkID}, network.TunnelID != "" || network.NetworkID != ""
 		}),
 		R2Buckets: collectBindings(env, "r2", func(binding string, bucket workerBinding) (R2Bucket, bool) {
 			return R2Bucket{Binding: binding, BucketName: bucket.Name, Jurisdiction: bucket.Jurisdiction}, bucket.Name != ""

@@ -33,6 +33,7 @@ type typeScriptConfig struct {
 type workerDefinition struct {
 	Name          string                   `json:"name"`
 	Observability *ObservabilityConfig     `json:"observability"`
+	Logpush       bool                     `json:"logpush"`
 	Triggers      []workerTrigger          `json:"triggers"`
 	Env           map[string]workerBinding `json:"env"`
 	Exports       map[string]workerExport  `json:"exports"`
@@ -197,6 +198,7 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		Name:           worker.Name,
 		AccountID:      accountID,
 		Observability:  worker.Observability,
+		Logpush:        worker.Logpush,
 		Triggers:       cronTriggers(worker.Triggers),
 		Routes:         fetchRoutes(worker.Triggers),
 		Addresses:      emailAddresses(worker.Triggers),

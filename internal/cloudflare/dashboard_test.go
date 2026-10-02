@@ -509,6 +509,16 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			wantURLs:  nil,
 		},
 		{
+			name: "Logpush",
+			config: &config.Config{
+				Logpush: true,
+			},
+			wantTypes: []ResourceType{ResourceTypeLogpush},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeLogpush: "https://dash.cloudflare.com/acc/logs",
+			},
+		},
+		{
 			name: "Email Routing - 一覧とドメインごとのページ",
 			config: &config.Config{
 				Addresses: []string{"*@example.com", "admin@example.com", "invalid"},

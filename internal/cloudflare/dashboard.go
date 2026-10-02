@@ -69,6 +69,18 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Logpush
+	if cfg.Logpush {
+		logpushURL := "logs"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeLogpush,
+			Name:        "logpush",
+			ID:          "logpush",
+			Description: "Logpush",
+			URL:         BuildDashboardURL(accountID, logpushURL, hasAccount),
+		})
+	}
+
 	// Workers Routes
 	routes := cfg.Routes
 	if cfg.Route != nil {

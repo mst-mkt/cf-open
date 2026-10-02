@@ -7,6 +7,7 @@ const (
 	ResourceTypeWorker             ResourceType = "worker"
 	ResourceTypeObservability      ResourceType = "observability"
 	ResourceTypeCronTriggers       ResourceType = "cron_triggers"
+	ResourceTypeLogpush            ResourceType = "logpush"
 	ResourceTypeRoutes             ResourceType = "routes"
 	ResourceTypeWorkersRoutes      ResourceType = "workers_routes"
 	ResourceTypeEmailRouting       ResourceType = "email_routing"

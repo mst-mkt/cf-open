@@ -19,6 +19,7 @@ type Config struct {
 	Vars                map[string]any `json:"vars" toml:"vars"`
 
 	Observability           *ObservabilityConfig     `json:"observability" toml:"observability"`
+	Logpush                 bool                     `json:"logpush" toml:"logpush"`
 	Triggers                *TriggersConfig          `json:"triggers" toml:"triggers"`
 	Routes                  []Route                  `json:"routes" toml:"routes"`
 	Route                   *Route                   `json:"route" toml:"route"`

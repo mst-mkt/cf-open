@@ -116,6 +116,19 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Logpush を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "logpush-worker",
+				"logpush": true
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if !cfg.Logpush {
+					t.Error("Logpush = false, want true")
+				}
+			},
+		},
+		{
 			name:     "JSON で addresses を含む設定",
 			filename: "wrangler.json",
 			content: `{

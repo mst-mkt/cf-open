@@ -244,6 +244,7 @@ func TestToConfig(t *testing.T) {
 				"worker": {
 					"name": "my-worker",
 					"observability": {"enabled": true},
+					"logpush": true,
 					"triggers": [
 						{"type": "scheduled", "schedule": "0 * * * *"},
 						{"type": "fetch", "pattern": "example.com/*"},
@@ -285,6 +286,7 @@ func TestToConfig(t *testing.T) {
 				Name:                    "my-worker",
 				AccountID:               "acc-123",
 				Observability:           &ObservabilityConfig{Enabled: true},
+				Logpush:                 true,
 				Triggers:                &TriggersConfig{Crons: []string{"0 * * * *", "0 0 * * *"}},
 				Routes:                  []Route{{Pattern: "example.com/*"}, {Pattern: "example.com/api/*", ZoneName: "example.com"}, {Pattern: "example.net/*"}},
 				Addresses:               []string{"*@example.com"},

@@ -23,6 +23,7 @@ type Config struct {
 	Workflows           []Workflow            `json:"workflows" toml:"workflows"`
 	DurableObjects      *DurableObjectsConfig `json:"durable_objects" toml:"durable_objects"`
 	Browser             *BrowserConfig        `json:"browser" toml:"browser"`
+	AI                  *AIConfig             `json:"ai" toml:"ai"`
 	VPCServices         []VPCService          `json:"vpc_services" toml:"vpc_services"`
 	R2Buckets           []R2Bucket            `json:"r2_buckets" toml:"r2_buckets"`
 	KVNamespaces        []KVNamespace         `json:"kv_namespaces" toml:"kv_namespaces"`
@@ -72,6 +73,10 @@ type DurableObjectBinding struct {
 }
 
 type BrowserConfig struct {
+	Binding string `json:"binding" toml:"binding"`
+}
+
+type AIConfig struct {
 	Binding string `json:"binding" toml:"binding"`
 }
 

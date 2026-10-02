@@ -304,6 +304,16 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Workers AI",
+			config: &config.Config{
+				AI: &config.AIConfig{Binding: "AI"},
+			},
+			wantTypes: []ResourceType{ResourceTypeWorkersAI},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeWorkersAI: "https://dash.cloudflare.com/acc/ai/workers-ai",
+			},
+		},
+		{
 			name: "Images",
 			config: &config.Config{
 				Images: &config.ImagesConfig{Binding: "MY_IMAGES"},
@@ -369,6 +379,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 					Bindings: []config.DurableObjectBinding{{Name: "DO", ClassName: "DO"}},
 				},
 				Browser:     &config.BrowserConfig{Binding: "BROWSER"},
+				AI:          &config.AIConfig{Binding: "AI"},
 				Images:      &config.ImagesConfig{Binding: "IMAGES"},
 				VPCServices: []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
 				Triggers:    &config.TriggersConfig{Crons: []string{"* * * * *"}},
@@ -381,6 +392,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeWorkflow,
 				ResourceTypeDurableObjects,
 				ResourceTypeBrowserRun,
+				ResourceTypeWorkersAI,
 				ResourceTypeVPC,
 				ResourceTypeR2,
 				ResourceTypeKV,

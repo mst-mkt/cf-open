@@ -118,6 +118,18 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Workers AI
+	if cfg.AI != nil && cfg.AI.Binding != "" {
+		aiURL := "ai/workers-ai"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeWorkersAI,
+			Name:        cfg.AI.Binding,
+			ID:          "workers-ai",
+			Description: "Workers AI",
+			URL:         BuildDashboardURL(accountID, aiURL, hasAccount),
+		})
+	}
+
 	// VPC
 	for _, service := range cfg.VPCServices {
 		vpcURL := fmt.Sprintf("workers/vpc/services/%s", service.ServiceID)

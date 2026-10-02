@@ -261,6 +261,7 @@ func TestToConfig(t *testing.T) {
 						"SECRET": {"type": "secrets-store-secret", "storeId": "store-id", "secretName": "my-secret"},
 						"VPC": {"type": "vpc-service", "id": "vpc-id"},
 						"BROWSER": {"type": "browser"},
+						"AI": {"type": "ai"},
 						"IMAGES": {"type": "images"},
 						"OBJECT": {"type": "durable-object", "worker": "my-worker", "exportName": "MyObject"}
 					}
@@ -275,6 +276,7 @@ func TestToConfig(t *testing.T) {
 				Queues:              &QueuesConfig{Producers: []QueueProducer{{Binding: "QUEUE", Queue: "my-queue"}}, Consumers: []QueueConsumer{{Queue: "consumed-queue"}}},
 				DurableObjects:      &DurableObjectsConfig{Bindings: []DurableObjectBinding{{Name: "OBJECT", ClassName: "MyObject"}}},
 				Browser:             &BrowserConfig{Binding: "BROWSER"},
+				AI:                  &AIConfig{Binding: "AI"},
 				VPCServices:         []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
 				R2Buckets:           []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
 				KVNamespaces:        []KVNamespace{{Binding: "CACHE", ID: "kv-id"}},
@@ -322,7 +324,7 @@ func TestToConfig(t *testing.T) {
 				"worker": {
 					"name": "my-worker",
 					"env": {
-						"AI": {"type": "ai"},
+						"GREETING": {"type": "text", "value": "hello"},
 						"DB": {"type": "d1", "id": "db-id"}
 					}
 				}

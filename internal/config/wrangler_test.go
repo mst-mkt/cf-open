@@ -216,6 +216,23 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Workers AI を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "ai-worker",
+				"ai": {"binding": "AI"}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.AI == nil {
+					t.Error("AI is nil")
+					return
+				}
+				if cfg.AI.Binding != "AI" {
+					t.Errorf("AI.Binding = %q, want %q", cfg.AI.Binding, "AI")
+				}
+			},
+		},
+		{
 			name:     "JSON で VPC Services を含む設定",
 			filename: "wrangler.json",
 			content: `{

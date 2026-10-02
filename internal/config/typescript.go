@@ -167,6 +167,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		Browser: firstBinding(env, "browser", func(binding string) BrowserConfig {
 			return BrowserConfig{Binding: binding}
 		}),
+		AI: firstBinding(env, "ai", func(binding string) AIConfig {
+			return AIConfig{Binding: binding}
+		}),
 		VPCServices: collectBindings(env, "vpc-service", func(binding string, service workerBinding) (VPCService, bool) {
 			return VPCService{Binding: binding, ServiceID: service.ID}, service.ID != ""
 		}),

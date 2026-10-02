@@ -11,6 +11,7 @@ const (
 	ResourceTypeWorkflow       ResourceType = "workflow"
 	ResourceTypeDurableObjects ResourceType = "durable_objects"
 	ResourceTypeBrowserRun     ResourceType = "browser_run"
+	ResourceTypeWorkersAI      ResourceType = "workers_ai"
 	ResourceTypeVPC            ResourceType = "vpc"
 	ResourceTypeR2             ResourceType = "r2"
 	ResourceTypeKV             ResourceType = "kv"

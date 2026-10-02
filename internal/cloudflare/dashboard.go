@@ -488,7 +488,7 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 
 	// Images
 	if cfg.Images != nil && cfg.Images.Binding != "" {
-		imagesURL := "images"
+		imagesURL := "images/hosted"
 		resources = append(resources, Resource{
 			Type:        ResourceTypeImages,
 			Name:        cfg.Images.Binding,

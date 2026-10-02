@@ -405,7 +405,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 			wantTypes: []ResourceType{ResourceTypeImages},
 			wantURLs: map[ResourceType]string{
-				ResourceTypeImages: "https://dash.cloudflare.com/acc/images",
+				ResourceTypeImages: "https://dash.cloudflare.com/acc/images/hosted",
 			},
 		},
 		{

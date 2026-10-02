@@ -15,4 +15,4 @@ https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/d1/database
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/pipelines/streams/my-pipeline
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/ai/vectorize/my-index
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/secrets-store/store-id
-https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/images
+https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/images/hosted

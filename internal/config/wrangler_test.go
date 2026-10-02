@@ -174,6 +174,31 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Durable Objects を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "do-worker",
+				"durable_objects": {
+					"bindings": [
+						{"name": "MY_OBJECT", "class_name": "MyObject"}
+					]
+				}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.DurableObjects == nil {
+					t.Error("DurableObjects is nil")
+					return
+				}
+				if len(cfg.DurableObjects.Bindings) != 1 {
+					t.Errorf("len(DurableObjects.Bindings) = %d, want 1", len(cfg.DurableObjects.Bindings))
+					return
+				}
+				if cfg.DurableObjects.Bindings[0].ClassName != "MyObject" {
+					t.Errorf("DurableObjects.Bindings[0].ClassName = %q, want %q", cfg.DurableObjects.Bindings[0].ClassName, "MyObject")
+				}
+			},
+		},
+		{
 			name:     "JSON で Browser を含む設定",
 			filename: "wrangler.json",
 			content: `{

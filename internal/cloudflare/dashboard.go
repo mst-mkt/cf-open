@@ -93,6 +93,19 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Durable Objects
+	// The detail page is addressed by namespace ID, not the class name in the config, so open the list.
+	if cfg.DurableObjects != nil && len(cfg.DurableObjects.Bindings) > 0 {
+		durableObjectsURL := "workers/durable-objects"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeDurableObjects,
+			Name:        "durable-objects",
+			ID:          "durable-objects",
+			Description: "Durable Objects",
+			URL:         BuildDashboardURL(accountID, durableObjectsURL, hasAccount),
+		})
+	}
+
 	// Browser Run
 	if cfg.Browser != nil && cfg.Browser.Binding != "" {
 		browserURL := "workers/browser-run"

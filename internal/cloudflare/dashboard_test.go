@@ -206,6 +206,21 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Durable Objects - 複数の class をまとめる",
+			config: &config.Config{
+				DurableObjects: &config.DurableObjectsConfig{
+					Bindings: []config.DurableObjectBinding{
+						{Name: "OBJECT1", ClassName: "Object1"},
+						{Name: "OBJECT2", ClassName: "Object2"},
+					},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeDurableObjects},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeDurableObjects: "https://dash.cloudflare.com/acc/workers/durable-objects",
+			},
+		},
+		{
 			name: "Vectorize",
 			config: &config.Config{
 				Vectorize: []config.VectorizeIndex{
@@ -337,6 +352,9 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				SecretsStoreSecrets: []config.SecretsStoreSecret{
 					{Binding: "SEC", StoreID: "store", SecretName: "secret"},
 				},
+				DurableObjects: &config.DurableObjectsConfig{
+					Bindings: []config.DurableObjectBinding{{Name: "DO", ClassName: "DO"}},
+				},
 				Browser:     &config.BrowserConfig{Binding: "BROWSER"},
 				Images:      &config.ImagesConfig{Binding: "IMAGES"},
 				VPCServices: []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
@@ -348,6 +366,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeCronTriggers,
 				ResourceTypeQueue,
 				ResourceTypeWorkflow,
+				ResourceTypeDurableObjects,
 				ResourceTypeBrowserRun,
 				ResourceTypeVPC,
 				ResourceTypeR2,

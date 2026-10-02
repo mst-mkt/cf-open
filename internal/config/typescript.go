@@ -157,12 +157,13 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 	env := worker.Env
 
 	return &Config{
-		Name:          worker.Name,
-		AccountID:     accountID,
-		Observability: worker.Observability,
-		Triggers:      cronTriggers(worker.Triggers),
-		Queues:        queuesConfig(env, worker.Triggers),
-		Workflows:     workflows(worker),
+		Name:           worker.Name,
+		AccountID:      accountID,
+		Observability:  worker.Observability,
+		Triggers:       cronTriggers(worker.Triggers),
+		Queues:         queuesConfig(env, worker.Triggers),
+		Workflows:      workflows(worker),
+		DurableObjects: durableObjects(worker),
 		Browser: firstBinding(env, "browser", func(binding string) BrowserConfig {
 			return BrowserConfig{Binding: binding}
 		}),
@@ -287,4 +288,24 @@ func workflows(worker *workerDefinition) []Workflow {
 	}
 
 	return collected
+}
+
+func durableObjects(worker *workerDefinition) *DurableObjectsConfig {
+	var bindings []DurableObjectBinding
+
+	for binding, def := range bindingsOfKind(worker.Env, "durable-object") {
+		bindings = append(bindings, DurableObjectBinding{Name: binding, ClassName: def.ExportName})
+	}
+
+	for _, exportName := range slices.Sorted(maps.Keys(worker.Exports)) {
+		if worker.Exports[exportName].Type == "durable-object" {
+			bindings = append(bindings, DurableObjectBinding{ClassName: exportName})
+		}
+	}
+
+	if len(bindings) == 0 {
+		return nil
+	}
+
+	return &DurableObjectsConfig{Bindings: bindings}
 }

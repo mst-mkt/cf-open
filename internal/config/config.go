@@ -17,19 +17,20 @@ type Config struct {
 	PagesBuildOutputDir string         `json:"pages_build_output_dir" toml:"pages_build_output_dir"`
 	Vars                map[string]any `json:"vars" toml:"vars"`
 
-	Observability       *ObservabilityConfig `json:"observability" toml:"observability"`
-	Triggers            *TriggersConfig      `json:"triggers" toml:"triggers"`
-	Queues              *QueuesConfig        `json:"queues" toml:"queues"`
-	Workflows           []Workflow           `json:"workflows" toml:"workflows"`
-	Browser             *BrowserConfig       `json:"browser" toml:"browser"`
-	VPCServices         []VPCService         `json:"vpc_services" toml:"vpc_services"`
-	R2Buckets           []R2Bucket           `json:"r2_buckets" toml:"r2_buckets"`
-	KVNamespaces        []KVNamespace        `json:"kv_namespaces" toml:"kv_namespaces"`
-	D1Databases         []D1Database         `json:"d1_databases" toml:"d1_databases"`
-	Pipelines           []Pipeline           `json:"pipelines" toml:"pipelines"`
-	Vectorize           []VectorizeIndex     `json:"vectorize" toml:"vectorize"`
-	SecretsStoreSecrets []SecretsStoreSecret `json:"secrets_store_secrets" toml:"secrets_store_secrets"`
-	Images              *ImagesConfig        `json:"images" toml:"images"`
+	Observability       *ObservabilityConfig  `json:"observability" toml:"observability"`
+	Triggers            *TriggersConfig       `json:"triggers" toml:"triggers"`
+	Queues              *QueuesConfig         `json:"queues" toml:"queues"`
+	Workflows           []Workflow            `json:"workflows" toml:"workflows"`
+	DurableObjects      *DurableObjectsConfig `json:"durable_objects" toml:"durable_objects"`
+	Browser             *BrowserConfig        `json:"browser" toml:"browser"`
+	VPCServices         []VPCService          `json:"vpc_services" toml:"vpc_services"`
+	R2Buckets           []R2Bucket            `json:"r2_buckets" toml:"r2_buckets"`
+	KVNamespaces        []KVNamespace         `json:"kv_namespaces" toml:"kv_namespaces"`
+	D1Databases         []D1Database          `json:"d1_databases" toml:"d1_databases"`
+	Pipelines           []Pipeline            `json:"pipelines" toml:"pipelines"`
+	Vectorize           []VectorizeIndex      `json:"vectorize" toml:"vectorize"`
+	SecretsStoreSecrets []SecretsStoreSecret  `json:"secrets_store_secrets" toml:"secrets_store_secrets"`
+	Images              *ImagesConfig         `json:"images" toml:"images"`
 }
 
 type ObservabilityConfig struct {
@@ -56,6 +57,15 @@ type QueueConsumer struct {
 
 type Workflow struct {
 	Binding   string `json:"binding" toml:"binding"`
+	Name      string `json:"name" toml:"name"`
+	ClassName string `json:"class_name" toml:"class_name"`
+}
+
+type DurableObjectsConfig struct {
+	Bindings []DurableObjectBinding `json:"bindings" toml:"bindings"`
+}
+
+type DurableObjectBinding struct {
 	Name      string `json:"name" toml:"name"`
 	ClassName string `json:"class_name" toml:"class_name"`
 }

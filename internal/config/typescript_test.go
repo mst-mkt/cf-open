@@ -260,7 +260,8 @@ func TestToConfig(t *testing.T) {
 						"SECRET": {"type": "secrets-store-secret", "storeId": "store-id", "secretName": "my-secret"},
 						"VPC": {"type": "vpc-service", "id": "vpc-id"},
 						"BROWSER": {"type": "browser"},
-						"IMAGES": {"type": "images"}
+						"IMAGES": {"type": "images"},
+						"OBJECT": {"type": "durable-object", "worker": "my-worker", "exportName": "MyObject"}
 					}
 				},
 				"accountId": "acc-123"
@@ -271,6 +272,7 @@ func TestToConfig(t *testing.T) {
 				Observability:       &ObservabilityConfig{Enabled: true},
 				Triggers:            &TriggersConfig{Crons: []string{"0 * * * *", "0 0 * * *"}},
 				Queues:              &QueuesConfig{Producers: []QueueProducer{{Binding: "QUEUE", Queue: "my-queue"}}, Consumers: []QueueConsumer{{Queue: "consumed-queue"}}},
+				DurableObjects:      &DurableObjectsConfig{Bindings: []DurableObjectBinding{{Name: "OBJECT", ClassName: "MyObject"}}},
 				Browser:             &BrowserConfig{Binding: "BROWSER"},
 				VPCServices:         []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
 				R2Buckets:           []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
@@ -280,6 +282,21 @@ func TestToConfig(t *testing.T) {
 				Vectorize:           []VectorizeIndex{{Binding: "INDEX", IndexName: "my-index"}},
 				SecretsStoreSecrets: []SecretsStoreSecret{{Binding: "SECRET", StoreID: "store-id", SecretName: "my-secret"}},
 				Images:              &ImagesConfig{Binding: "IMAGES"},
+			},
+		},
+		{
+			name: "export だけで定義した Durable Object",
+			loaded: `{
+				"worker": {
+					"name": "my-worker",
+					"exports": {
+						"MyObject": {"type": "durable-object"}
+					}
+				}
+			}`,
+			want: &Config{
+				Name:           "my-worker",
+				DurableObjects: &DurableObjectsConfig{Bindings: []DurableObjectBinding{{ClassName: "MyObject"}}},
 			},
 		},
 		{
@@ -305,7 +322,6 @@ func TestToConfig(t *testing.T) {
 					"env": {
 						"AI": {"type": "ai"},
 						"HYPERDRIVE": {"type": "hyperdrive", "id": "hd-id"},
-						"DO": {"type": "durable-object", "workerName": "w", "exportName": "MyDurableObject"},
 						"DB": {"type": "d1", "id": "db-id"}
 					}
 				}
@@ -367,6 +383,7 @@ func TestToConfig(t *testing.T) {
 					{Binding: "REMOTE", Name: "remote-workflow", ClassName: "RemoteWorkflow"},
 					{Name: "unbound-workflow", ClassName: "UnboundWorkflow"},
 				},
+				DurableObjects: &DurableObjectsConfig{Bindings: []DurableObjectBinding{{ClassName: "Counter"}}},
 			},
 		},
 		{

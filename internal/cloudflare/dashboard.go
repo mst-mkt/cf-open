@@ -18,8 +18,22 @@ func BuildDashboardURL(accountID, path string, hasAccount bool) string {
 func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount bool) []Resource {
 	var resources []Resource
 
+	isPages := cfg.PagesBuildOutputDir != ""
+
+	// Pages
+	if cfg.Name != "" && isPages {
+		pagesURL := fmt.Sprintf("pages/view/%s", cfg.Name)
+		resources = append(resources, Resource{
+			Type:        ResourceTypePages,
+			Name:        cfg.Name,
+			ID:          cfg.Name,
+			Description: fmt.Sprintf("Pages: %s", cfg.Name),
+			URL:         BuildDashboardURL(accountID, pagesURL, hasAccount),
+		})
+	}
+
 	// Workers
-	if cfg.Name != "" {
+	if cfg.Name != "" && !isPages {
 		workerURL := fmt.Sprintf("workers/services/view/%s/production", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeWorker,
@@ -31,7 +45,7 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 	}
 
 	// Workers Observability
-	if cfg.Name != "" && cfg.Observability != nil {
+	if cfg.Name != "" && !isPages && cfg.Observability != nil {
 		observabilityURL := fmt.Sprintf("workers/services/view/%s/production/observability", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeObservability,
@@ -43,7 +57,7 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 	}
 
 	// Workers Cron Triggers
-	if cfg.Name != "" && cfg.Triggers != nil && len(cfg.Triggers.Crons) > 0 {
+	if cfg.Name != "" && !isPages && cfg.Triggers != nil && len(cfg.Triggers.Crons) > 0 {
 		cronURL := fmt.Sprintf("workers/services/view/%s/production/settings#trigger-events", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeCronTriggers,

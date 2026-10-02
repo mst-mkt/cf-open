@@ -59,6 +59,19 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Pages の設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "my-project",
+				"pages_build_output_dir": "./dist"
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.PagesBuildOutputDir != "./dist" {
+					t.Errorf("PagesBuildOutputDir = %q, want %q", cfg.PagesBuildOutputDir, "./dist")
+				}
+			},
+		},
+		{
 			name:     "JSON で Observability を含む設定",
 			filename: "wrangler.json",
 			content: `{

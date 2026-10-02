@@ -3,6 +3,7 @@ package cloudflare
 type ResourceType string
 
 const (
+	ResourceTypePages         ResourceType = "pages"
 	ResourceTypeWorker        ResourceType = "worker"
 	ResourceTypeObservability ResourceType = "observability"
 	ResourceTypeCronTriggers  ResourceType = "cron_triggers"

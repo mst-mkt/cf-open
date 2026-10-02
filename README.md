@@ -49,6 +49,7 @@ The account ID in the dashboard URL is taken from the first of these that is set
 ## Supported Resources
 
 - Workers
+- Pages
 - Workers Observability
 - Workers Cron Triggers
 - Queues

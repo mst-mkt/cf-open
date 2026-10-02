@@ -11,10 +11,11 @@ import (
 type Config struct {
 	Path string `json:"-" toml:"-"`
 
-	Name              string         `json:"name" toml:"name"`
-	AccountID         string         `json:"account_id" toml:"account_id"`
-	CompatibilityDate string         `json:"compatibility_date" toml:"compatibility_date"`
-	Vars              map[string]any `json:"vars" toml:"vars"`
+	Name                string         `json:"name" toml:"name"`
+	AccountID           string         `json:"account_id" toml:"account_id"`
+	CompatibilityDate   string         `json:"compatibility_date" toml:"compatibility_date"`
+	PagesBuildOutputDir string         `json:"pages_build_output_dir" toml:"pages_build_output_dir"`
+	Vars                map[string]any `json:"vars" toml:"vars"`
 
 	Observability       *ObservabilityConfig `json:"observability" toml:"observability"`
 	Triggers            *TriggersConfig      `json:"triggers" toml:"triggers"`

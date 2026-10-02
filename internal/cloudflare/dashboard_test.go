@@ -69,6 +69,28 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Pages",
+			config: &config.Config{
+				Name:                "my-project",
+				PagesBuildOutputDir: "./dist",
+			},
+			wantTypes: []ResourceType{ResourceTypePages},
+			wantURLs: map[ResourceType]string{
+				ResourceTypePages: "https://dash.cloudflare.com/acc/pages/view/my-project",
+			},
+		},
+		{
+			name: "Pages - Observability と Cron Triggers は表示しない",
+			config: &config.Config{
+				Name:                "my-project",
+				PagesBuildOutputDir: "./dist",
+				Observability:       &config.ObservabilityConfig{Enabled: true},
+				Triggers:            &config.TriggersConfig{Crons: []string{"0 * * * *"}},
+			},
+			wantTypes: []ResourceType{ResourceTypePages},
+			wantURLs:  nil,
+		},
+		{
 			name: "Worker + Observability",
 			config: &config.Config{
 				Name:          "my-worker",

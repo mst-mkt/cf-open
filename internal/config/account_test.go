@@ -26,9 +26,19 @@ func TestGetAccountID(t *testing.T) {
 			wantHas:       true,
 		},
 		{
-			name: "環境変数で account_id が指定されている場合",
+			name: "設定と環境変数の両方に account_id がある場合は設定を優先する",
 			config: &Config{
 				AccountID: "config-account-123",
+			},
+			flagAccountID: "",
+			envAccountID:  "env-account-789",
+			wantID:        "config-account-123",
+			wantHas:       true,
+		},
+		{
+			name: "設定に account_id がなく環境変数で指定されている場合",
+			config: &Config{
+				AccountID: "",
 			},
 			flagAccountID: "",
 			envAccountID:  "env-account-789",

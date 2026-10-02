@@ -33,7 +33,7 @@ If there is only one resource, it will open directly.
 
 Reading `cloudflare.config.ts` requires Node.js v22.18.0 or later, as the file is evaluated with `node` from your `PATH`. Use `--mode` to choose the mode passed to a function-form config.
 
-The account ID in the dashboard URL is taken from the first of these that is set: `--account-id`, the `CLOUDFLARE_ACCOUNT_ID` environment variable, the configuration file, the account cached by `cf`, then the one cached by Wrangler.
+The account ID in the dashboard URL is taken from the first of these that is set: `--account-id`, the configuration file, the `CLOUDFLARE_ACCOUNT_ID` environment variable, the account cached by `cf`, then the one cached by Wrangler.
 
 ### Options
 

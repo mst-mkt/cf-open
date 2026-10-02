@@ -33,6 +33,7 @@ type Config struct {
 	Stream                  *StreamConfig            `json:"stream" toml:"stream"`
 	AISearch                []AISearchInstance       `json:"ai_search" toml:"ai_search"`
 	AISearchNamespaces      []AISearchNamespace      `json:"ai_search_namespaces" toml:"ai_search_namespaces"`
+	Artifacts               []Artifacts              `json:"artifacts" toml:"artifacts"`
 	AnalyticsEngineDatasets []AnalyticsEngineDataset `json:"analytics_engine_datasets" toml:"analytics_engine_datasets"`
 	SendEmail               []SendEmail              `json:"send_email" toml:"send_email"`
 	VPCServices             []VPCService             `json:"vpc_services" toml:"vpc_services"`
@@ -139,6 +140,11 @@ type AISearchInstance struct {
 }
 
 type AISearchNamespace struct {
+	Binding   string `json:"binding" toml:"binding"`
+	Namespace string `json:"namespace" toml:"namespace"`
+}
+
+type Artifacts struct {
 	Binding   string `json:"binding" toml:"binding"`
 	Namespace string `json:"namespace" toml:"namespace"`
 }

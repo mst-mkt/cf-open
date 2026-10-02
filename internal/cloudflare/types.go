@@ -21,6 +21,7 @@ const (
 	ResourceTypeStream             ResourceType = "stream"
 	ResourceTypeAISearch           ResourceType = "ai_search"
 	ResourceTypeAISearchNamespace  ResourceType = "ai_search_namespace"
+	ResourceTypeArtifacts          ResourceType = "artifacts"
 	ResourceTypeAnalyticsEngine    ResourceType = "analytics_engine"
 	ResourceTypeEmailSending       ResourceType = "email_sending"
 	ResourceTypeVPC                ResourceType = "vpc"

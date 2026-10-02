@@ -360,6 +360,21 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Artifacts を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "artifacts-worker",
+				"artifacts": [
+					{"binding": "ARTIFACTS", "namespace": "my-artifacts"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Artifacts) != 1 || cfg.Artifacts[0].Namespace != "my-artifacts" {
+					t.Errorf("Artifacts = %+v, want my-artifacts", cfg.Artifacts)
+				}
+			},
+		},
+		{
 			name:     "JSON で AI Search を含む設定",
 			filename: "wrangler.json",
 			content: `{

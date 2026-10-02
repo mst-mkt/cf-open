@@ -256,6 +256,18 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Artifacts
+	for _, artifacts := range cfg.Artifacts {
+		artifactsURL := fmt.Sprintf("workers/artifacts/namespaces/%s", artifacts.Namespace)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeArtifacts,
+			Name:        artifacts.Binding,
+			ID:          artifacts.Namespace,
+			Description: fmt.Sprintf("Artifacts: %s", artifacts.Namespace),
+			URL:         BuildDashboardURL(accountID, artifactsURL, hasAccount),
+		})
+	}
+
 	// Analytics Engine
 	// Datasets have no page of their own, so open the list.
 	if len(cfg.AnalyticsEngineDatasets) > 0 {

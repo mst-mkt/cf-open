@@ -220,6 +220,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		AISearchNamespaces: collectBindings(env, "ai-search-namespace", func(binding string, namespace workerBinding) (AISearchNamespace, bool) {
 			return AISearchNamespace{Binding: binding, Namespace: namespace.Namespace}, namespace.Namespace != ""
 		}),
+		Artifacts: collectBindings(env, "artifacts", func(binding string, artifacts workerBinding) (Artifacts, bool) {
+			return Artifacts{Binding: binding, Namespace: artifacts.Namespace}, artifacts.Namespace != ""
+		}),
 		AnalyticsEngineDatasets: collectBindings(env, "analytics-engine-dataset", func(binding string, dataset workerBinding) (AnalyticsEngineDataset, bool) {
 			return AnalyticsEngineDataset{Binding: binding, Dataset: dataset.Name}, true
 		}),

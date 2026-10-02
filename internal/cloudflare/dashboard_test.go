@@ -361,6 +361,18 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Artifacts",
+			config: &config.Config{
+				Artifacts: []config.Artifacts{
+					{Binding: "ARTIFACTS", Namespace: "my-artifacts"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeArtifacts},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeArtifacts: "https://dash.cloudflare.com/acc/workers/artifacts/namespaces/my-artifacts",
+			},
+		},
+		{
 			name: "Analytics Engine - 複数の dataset をまとめる",
 			config: &config.Config{
 				AnalyticsEngineDatasets: []config.AnalyticsEngineDataset{

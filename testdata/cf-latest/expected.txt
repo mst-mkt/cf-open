@@ -7,6 +7,7 @@ https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/workflows/m
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/browser-run
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/vpc/services
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/r2/default/buckets/my-bucket
+https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/r2/eu/buckets/my-eu-bucket
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/kv/namespaces/kv-id/metrics
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/d1/databases/db-id/metrics
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/pipelines/streams/my-pipeline

@@ -191,6 +191,25 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で jurisdiction 付きの R2 バケットを含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "r2-worker",
+				"r2_buckets": [
+					{"binding": "BUCKET", "bucket_name": "my-bucket", "jurisdiction": "eu"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.R2Buckets) != 1 {
+					t.Errorf("len(R2Buckets) = %d, want 1", len(cfg.R2Buckets))
+					return
+				}
+				if cfg.R2Buckets[0].Jurisdiction != "eu" {
+					t.Errorf("R2Buckets[0].Jurisdiction = %q, want %q", cfg.R2Buckets[0].Jurisdiction, "eu")
+				}
+			},
+		},
+		{
 			name:     "JSON で KV namespace を含む設定",
 			filename: "wrangler.json",
 			content: `{

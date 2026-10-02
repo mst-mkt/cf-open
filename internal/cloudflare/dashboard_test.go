@@ -117,6 +117,18 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "R2 Bucket - jurisdiction 付き",
+			config: &config.Config{
+				R2Buckets: []config.R2Bucket{
+					{Binding: "MY_BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeR2},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeR2: "https://dash.cloudflare.com/acc/r2/eu/buckets/my-bucket",
+			},
+		},
+		{
 			name: "Queue",
 			config: &config.Config{
 				Queues: &config.QueuesConfig{

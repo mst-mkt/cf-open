@@ -18,6 +18,7 @@ const worker = defineWorker((ctx) => ({
     BUCKET: bindings.r2({ name: "my-bucket" }),
     CACHE: bindings.kv({ id: "kv-id" }),
     DB: bindings.d1({ name: "my-db", id: "db-id" }),
+    EU_BUCKET: bindings.r2({ name: "my-eu-bucket", jurisdiction: "eu" }),
     IMAGES: bindings.images(),
     INDEX: bindings.vectorize({ name: "my-index" }),
     PIPELINE: bindings.pipeline({ name: "my-pipeline" }),

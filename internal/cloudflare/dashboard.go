@@ -106,7 +106,11 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 
 	// R2 Object Storage
 	for _, bucket := range cfg.R2Buckets {
-		r2URL := fmt.Sprintf("r2/default/buckets/%s", bucket.BucketName)
+		jurisdiction := bucket.Jurisdiction
+		if jurisdiction == "" {
+			jurisdiction = "default"
+		}
+		r2URL := fmt.Sprintf("r2/%s/buckets/%s", jurisdiction, bucket.BucketName)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeR2,
 			Name:        bucket.Binding,

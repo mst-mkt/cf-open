@@ -64,8 +64,9 @@ type VPCService struct {
 }
 
 type R2Bucket struct {
-	Binding    string `json:"binding" toml:"binding"`
-	BucketName string `json:"bucket_name" toml:"bucket_name"`
+	Binding      string `json:"binding" toml:"binding"`
+	BucketName   string `json:"bucket_name" toml:"bucket_name"`
+	Jurisdiction string `json:"jurisdiction" toml:"jurisdiction"`
 }
 
 type KVNamespace struct {

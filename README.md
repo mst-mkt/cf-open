@@ -52,17 +52,34 @@ The account ID in the dashboard URL is taken from the first of these that is set
 - Pages
 - Workers Observability
 - Workers Cron Triggers
+- Workers Routes
+- Workers Logpush
+- Service Bindings
+- Tail Workers
+- Containers
+- Durable Objects
 - Queues
 - Workflows
 - Browser Run
 - VPC
+- Email Routing
+- Email Sending
+- Flagship
+- Workers AI
+- Vectorize
+- AI Search
 - R2 Object Storage
+- Hyperdrive
 - Worker KV
 - D1 SQL Databases
+- Artifacts
+- Analytics Engine
 - Pipelines
-- Vectorize
+- K2
 - Secrets Store
+- Media Transformations
 - Images
+- Stream
 
 ## License
 

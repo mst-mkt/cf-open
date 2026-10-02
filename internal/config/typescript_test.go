@@ -278,6 +278,7 @@ func TestToConfig(t *testing.T) {
 						"EVENTS": {"type": "analytics-engine-dataset", "name": "my-dataset"},
 						"EMAIL": {"type": "send-email"},
 						"IMAGES": {"type": "images"},
+						"MEDIA": {"type": "media"},
 						"OBJECT": {"type": "durable-object", "worker": "my-worker", "exportName": "MyObject"}
 					}
 				},
@@ -315,6 +316,7 @@ func TestToConfig(t *testing.T) {
 				Vectorize:               []VectorizeIndex{{Binding: "INDEX", IndexName: "my-index"}},
 				SecretsStoreSecrets:     []SecretsStoreSecret{{Binding: "SECRET", StoreID: "store-id", SecretName: "my-secret"}},
 				Images:                  &ImagesConfig{Binding: "IMAGES"},
+				Media:                   &MediaConfig{Binding: "MEDIA"},
 			},
 		},
 		{

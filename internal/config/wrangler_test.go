@@ -656,6 +656,19 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Media を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "media-worker",
+				"media": {"binding": "MEDIA"}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.Media == nil || cfg.Media.Binding != "MEDIA" {
+					t.Errorf("Media = %+v, want binding MEDIA", cfg.Media)
+				}
+			},
+		},
+		{
 			name:     "JSON で Images を含む設定",
 			filename: "wrangler.json",
 			content: `{

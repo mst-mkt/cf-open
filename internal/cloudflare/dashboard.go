@@ -498,5 +498,17 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Media
+	if cfg.Media != nil && cfg.Media.Binding != "" {
+		mediaURL := "media/transformations"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeMedia,
+			Name:        cfg.Media.Binding,
+			ID:          "media",
+			Description: "Media",
+			URL:         BuildDashboardURL(accountID, mediaURL, hasAccount),
+		})
+	}
+
 	return resources
 }

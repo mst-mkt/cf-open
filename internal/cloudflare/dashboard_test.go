@@ -409,6 +409,16 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Media",
+			config: &config.Config{
+				Media: &config.MediaConfig{Binding: "MEDIA"},
+			},
+			wantTypes: []ResourceType{ResourceTypeMedia},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeMedia: "https://dash.cloudflare.com/acc/media/transformations",
+			},
+		},
+		{
 			name: "VPC Services",
 			config: &config.Config{
 				VPCServices: []config.VPCService{
@@ -583,6 +593,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				AnalyticsEngineDatasets: []config.AnalyticsEngineDataset{{Binding: "EVENTS", Dataset: "dataset"}},
 				SendEmail:               []config.SendEmail{{Name: "EMAIL"}},
 				Images:                  &config.ImagesConfig{Binding: "IMAGES"},
+				Media:                   &config.MediaConfig{Binding: "MEDIA"},
 				VPCServices:             []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
 				VPCNetworks:             []config.VPCNetwork{{Binding: "NETWORK", TunnelID: "tunnel-id"}},
 				Flagship:                []config.Flagship{{Binding: "FLAGS", AppID: "app-id"}},
@@ -615,6 +626,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeVectorize,
 				ResourceTypeSecretsStore,
 				ResourceTypeImages,
+				ResourceTypeMedia,
 			},
 			wantURLs: nil,
 		},

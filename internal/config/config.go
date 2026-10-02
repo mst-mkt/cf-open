@@ -50,6 +50,7 @@ type Config struct {
 	Vectorize               []VectorizeIndex         `json:"vectorize" toml:"vectorize"`
 	SecretsStoreSecrets     []SecretsStoreSecret     `json:"secrets_store_secrets" toml:"secrets_store_secrets"`
 	Images                  *ImagesConfig            `json:"images" toml:"images"`
+	Media                   *MediaConfig             `json:"media" toml:"media"`
 }
 
 type ObservabilityConfig struct {
@@ -223,6 +224,10 @@ type SecretsStoreSecret struct {
 }
 
 type ImagesConfig struct {
+	Binding string `json:"binding" toml:"binding"`
+}
+
+type MediaConfig struct {
 	Binding string `json:"binding" toml:"binding"`
 }
 

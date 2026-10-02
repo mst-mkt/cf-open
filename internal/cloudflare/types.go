@@ -38,6 +38,7 @@ const (
 	ResourceTypeVectorize          ResourceType = "vectorize"
 	ResourceTypeSecretsStore       ResourceType = "secrets_store"
 	ResourceTypeImages             ResourceType = "images"
+	ResourceTypeMedia              ResourceType = "media"
 )
 
 type Resource struct {

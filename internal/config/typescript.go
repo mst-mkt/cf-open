@@ -267,6 +267,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		Images: firstBinding(env, "images", func(binding string) ImagesConfig {
 			return ImagesConfig{Binding: binding}
 		}),
+		Media: firstBinding(env, "media", func(binding string) MediaConfig {
+			return MediaConfig{Binding: binding}
+		}),
 	}
 }
 

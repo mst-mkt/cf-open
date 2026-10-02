@@ -334,6 +334,25 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Flagship を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "flagship-worker",
+				"flagship": [
+					{"binding": "FLAGS", "app_id": "app-id"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Flagship) != 1 {
+					t.Errorf("len(Flagship) = %d, want 1", len(cfg.Flagship))
+					return
+				}
+				if cfg.Flagship[0].AppID != "app-id" {
+					t.Errorf("Flagship[0].AppID = %q, want %q", cfg.Flagship[0].AppID, "app-id")
+				}
+			},
+		},
+		{
 			name:     "JSON で VPC Networks を含む設定",
 			filename: "wrangler.json",
 			content: `{

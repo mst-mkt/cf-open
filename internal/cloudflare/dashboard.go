@@ -233,6 +233,24 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Flagship
+	for _, flagship := range cfg.Flagship {
+		flagshipURL := "flagship"
+		description := "Flagship"
+		if flagship.AppID != "" {
+			flagshipURL = fmt.Sprintf("flagship/applications/%s/overview", flagship.AppID)
+			description = fmt.Sprintf("Flagship: %s", flagship.AppID)
+		}
+
+		resources = append(resources, Resource{
+			Type:        ResourceTypeFlagship,
+			Name:        flagship.Binding,
+			ID:          flagship.AppID,
+			Description: description,
+			URL:         BuildDashboardURL(accountID, flagshipURL, hasAccount),
+		})
+	}
+
 	// R2 Object Storage
 	for _, bucket := range cfg.R2Buckets {
 		jurisdiction := bucket.Jurisdiction

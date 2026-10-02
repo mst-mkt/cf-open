@@ -20,6 +20,7 @@ const (
 	ResourceTypeVPC               ResourceType = "vpc"
 	ResourceTypeVPCNetworks       ResourceType = "vpc_networks"
 	ResourceTypeTunnel            ResourceType = "tunnel"
+	ResourceTypeFlagship          ResourceType = "flagship"
 	ResourceTypeR2                ResourceType = "r2"
 	ResourceTypeKV                ResourceType = "kv"
 	ResourceTypeD1                ResourceType = "d1"

@@ -195,6 +195,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		VPCNetworks: collectBindings(env, "vpc-network", func(binding string, network workerBinding) (VPCNetwork, bool) {
 			return VPCNetwork{Binding: binding, TunnelID: network.TunnelID, NetworkID: network.NetworkID}, network.TunnelID != "" || network.NetworkID != ""
 		}),
+		Flagship: collectBindings(env, "flagship", func(binding string, flagship workerBinding) (Flagship, bool) {
+			return Flagship{Binding: binding, AppID: flagship.ID}, true
+		}),
 		R2Buckets: collectBindings(env, "r2", func(binding string, bucket workerBinding) (R2Bucket, bool) {
 			return R2Bucket{Binding: binding, BucketName: bucket.Name, Jurisdiction: bucket.Jurisdiction}, bucket.Name != ""
 		}),

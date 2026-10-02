@@ -413,6 +413,30 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Flagship",
+			config: &config.Config{
+				Flagship: []config.Flagship{
+					{Binding: "FLAGS", AppID: "app-id"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeFlagship},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeFlagship: "https://dash.cloudflare.com/acc/flagship/applications/app-id/overview",
+			},
+		},
+		{
+			name: "Flagship - app_id なしの場合は一覧を開く",
+			config: &config.Config{
+				Flagship: []config.Flagship{
+					{Binding: "FLAGS"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeFlagship},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeFlagship: "https://dash.cloudflare.com/acc/flagship",
+			},
+		},
+		{
 			name: "Cron Triggers",
 			config: &config.Config{
 				Name: "my-worker",
@@ -465,6 +489,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				Images:                  &config.ImagesConfig{Binding: "IMAGES"},
 				VPCServices:             []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
 				VPCNetworks:             []config.VPCNetwork{{Binding: "NETWORK", TunnelID: "tunnel-id"}},
+				Flagship:                []config.Flagship{{Binding: "FLAGS", AppID: "app-id"}},
 				Triggers:                &config.TriggersConfig{Crons: []string{"* * * * *"}},
 			},
 			wantTypes: []ResourceType{
@@ -484,6 +509,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeVPC,
 				ResourceTypeVPCNetworks,
 				ResourceTypeTunnel,
+				ResourceTypeFlagship,
 				ResourceTypeR2,
 				ResourceTypeKV,
 				ResourceTypeD1,

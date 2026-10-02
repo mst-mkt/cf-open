@@ -31,6 +31,7 @@ type Config struct {
 	SendEmail               []SendEmail              `json:"send_email" toml:"send_email"`
 	VPCServices             []VPCService             `json:"vpc_services" toml:"vpc_services"`
 	VPCNetworks             []VPCNetwork             `json:"vpc_networks" toml:"vpc_networks"`
+	Flagship                []Flagship               `json:"flagship" toml:"flagship"`
 	R2Buckets               []R2Bucket               `json:"r2_buckets" toml:"r2_buckets"`
 	KVNamespaces            []KVNamespace            `json:"kv_namespaces" toml:"kv_namespaces"`
 	D1Databases             []D1Database             `json:"d1_databases" toml:"d1_databases"`
@@ -119,6 +120,11 @@ type VPCNetwork struct {
 	Binding   string `json:"binding" toml:"binding"`
 	TunnelID  string `json:"tunnel_id" toml:"tunnel_id"`
 	NetworkID string `json:"network_id" toml:"network_id"`
+}
+
+type Flagship struct {
+	Binding string `json:"binding" toml:"binding"`
+	AppID   string `json:"app_id" toml:"app_id"`
 }
 
 type R2Bucket struct {

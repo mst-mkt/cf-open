@@ -22,6 +22,7 @@ type Config struct {
 	Queues                  *QueuesConfig            `json:"queues" toml:"queues"`
 	Workflows               []Workflow               `json:"workflows" toml:"workflows"`
 	DurableObjects          *DurableObjectsConfig    `json:"durable_objects" toml:"durable_objects"`
+	Containers              []Container              `json:"containers" toml:"containers"`
 	Browser                 *BrowserConfig           `json:"browser" toml:"browser"`
 	AI                      *AIConfig                `json:"ai" toml:"ai"`
 	AISearch                []AISearchInstance       `json:"ai_search" toml:"ai_search"`
@@ -71,6 +72,11 @@ type DurableObjectsConfig struct {
 }
 
 type DurableObjectBinding struct {
+	Name      string `json:"name" toml:"name"`
+	ClassName string `json:"class_name" toml:"class_name"`
+}
+
+type Container struct {
 	Name      string `json:"name" toml:"name"`
 	ClassName string `json:"class_name" toml:"class_name"`
 }

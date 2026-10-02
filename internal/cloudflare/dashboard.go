@@ -106,6 +106,19 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Containers
+	// The detail page is addressed by application ID, not the name in the config, so open the list.
+	if len(cfg.Containers) > 0 {
+		containersURL := "workers/containers"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeContainers,
+			Name:        "containers",
+			ID:          "containers",
+			Description: "Containers",
+			URL:         BuildDashboardURL(accountID, containersURL, hasAccount),
+		})
+	}
+
 	// Browser Run
 	if cfg.Browser != nil && cfg.Browser.Binding != "" {
 		browserURL := "workers/browser-run"

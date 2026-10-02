@@ -107,7 +107,7 @@ export default { worker: { name: 'lingering-worker' } }
 		{
 			name:    "containers だけの設定",
 			content: "export default { accountId: 'acc-123', containers: [{ name: 'app', image: { dockerfile: './Dockerfile' } }] }\n",
-			want:    &Config{AccountID: "acc-123"},
+			want:    &Config{AccountID: "acc-123", Containers: []Container{{Name: "app"}}},
 		},
 		{
 			name:    "worker が null の設定",

@@ -25,8 +25,9 @@ const (
 )
 
 type typeScriptConfig struct {
-	AccountID string            `json:"accountId"`
-	Worker    *workerDefinition `json:"worker"`
+	AccountID  string            `json:"accountId"`
+	Worker     *workerDefinition `json:"worker"`
+	Containers []Container       `json:"containers"`
 }
 
 type workerDefinition struct {
@@ -79,7 +80,10 @@ func loadTypeScriptConfig(configPath, mode string) (*Config, error) {
 		return nil, fmt.Errorf("failed to parse the loaded config: %w", err)
 	}
 
-	return toConfig(config.Worker, config.AccountID), nil
+	cfg := toConfig(config.Worker, config.AccountID)
+	cfg.Containers = config.Containers
+
+	return cfg, nil
 }
 
 func runLoader(node, configPath, mode string) ([]byte, error) {

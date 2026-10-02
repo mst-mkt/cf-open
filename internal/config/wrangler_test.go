@@ -174,6 +174,25 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Containers を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "container-worker",
+				"containers": [
+					{"class_name": "MyContainer", "image": "./Dockerfile"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Containers) != 1 {
+					t.Errorf("len(Containers) = %d, want 1", len(cfg.Containers))
+					return
+				}
+				if cfg.Containers[0].ClassName != "MyContainer" {
+					t.Errorf("Containers[0].ClassName = %q, want %q", cfg.Containers[0].ClassName, "MyContainer")
+				}
+			},
+		},
+		{
 			name:     "JSON で Durable Objects を含む設定",
 			filename: "wrangler.json",
 			content: `{

@@ -10,6 +10,7 @@ const (
 	ResourceTypeQueue             ResourceType = "queue"
 	ResourceTypeWorkflow          ResourceType = "workflow"
 	ResourceTypeDurableObjects    ResourceType = "durable_objects"
+	ResourceTypeContainers        ResourceType = "containers"
 	ResourceTypeBrowserRun        ResourceType = "browser_run"
 	ResourceTypeWorkersAI         ResourceType = "workers_ai"
 	ResourceTypeAISearch          ResourceType = "ai_search"

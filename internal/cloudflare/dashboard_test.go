@@ -233,6 +233,19 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Containers - 複数の container をまとめる",
+			config: &config.Config{
+				Containers: []config.Container{
+					{Name: "app-1"},
+					{Name: "app-2"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeContainers},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeContainers: "https://dash.cloudflare.com/acc/workers/containers",
+			},
+		},
+		{
 			name: "Vectorize",
 			config: &config.Config{
 				Vectorize: []config.VectorizeIndex{
@@ -415,6 +428,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				DurableObjects: &config.DurableObjectsConfig{
 					Bindings: []config.DurableObjectBinding{{Name: "DO", ClassName: "DO"}},
 				},
+				Containers:              []config.Container{{Name: "app"}},
 				Browser:                 &config.BrowserConfig{Binding: "BROWSER"},
 				AI:                      &config.AIConfig{Binding: "AI"},
 				AISearch:                []config.AISearchInstance{{Binding: "SEARCH", InstanceName: "instance"}},
@@ -431,6 +445,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeQueue,
 				ResourceTypeWorkflow,
 				ResourceTypeDurableObjects,
+				ResourceTypeContainers,
 				ResourceTypeBrowserRun,
 				ResourceTypeWorkersAI,
 				ResourceTypeAISearch,

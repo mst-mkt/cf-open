@@ -13,6 +13,7 @@ const (
 	ResourceTypeContainers        ResourceType = "containers"
 	ResourceTypeBrowserRun        ResourceType = "browser_run"
 	ResourceTypeWorkersAI         ResourceType = "workers_ai"
+	ResourceTypeStream            ResourceType = "stream"
 	ResourceTypeAISearch          ResourceType = "ai_search"
 	ResourceTypeAISearchNamespace ResourceType = "ai_search_namespace"
 	ResourceTypeAnalyticsEngine   ResourceType = "analytics_engine"

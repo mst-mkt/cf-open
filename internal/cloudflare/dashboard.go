@@ -143,6 +143,18 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Stream
+	if cfg.Stream != nil && cfg.Stream.Binding != "" {
+		streamURL := "stream/videos"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeStream,
+			Name:        cfg.Stream.Binding,
+			ID:          "stream",
+			Description: "Stream",
+			URL:         BuildDashboardURL(accountID, streamURL, hasAccount),
+		})
+	}
+
 	// AI Search
 	for _, instance := range cfg.AISearch {
 		aiSearchURL := fmt.Sprintf("ai/ai-search/namespace/default/instance/%s/overview", instance.InstanceName)

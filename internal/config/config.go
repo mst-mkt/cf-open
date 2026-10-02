@@ -25,6 +25,7 @@ type Config struct {
 	Containers              []Container              `json:"containers" toml:"containers"`
 	Browser                 *BrowserConfig           `json:"browser" toml:"browser"`
 	AI                      *AIConfig                `json:"ai" toml:"ai"`
+	Stream                  *StreamConfig            `json:"stream" toml:"stream"`
 	AISearch                []AISearchInstance       `json:"ai_search" toml:"ai_search"`
 	AISearchNamespaces      []AISearchNamespace      `json:"ai_search_namespaces" toml:"ai_search_namespaces"`
 	AnalyticsEngineDatasets []AnalyticsEngineDataset `json:"analytics_engine_datasets" toml:"analytics_engine_datasets"`
@@ -89,6 +90,10 @@ type BrowserConfig struct {
 }
 
 type AIConfig struct {
+	Binding string `json:"binding" toml:"binding"`
+}
+
+type StreamConfig struct {
 	Binding string `json:"binding" toml:"binding"`
 }
 

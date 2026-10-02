@@ -235,6 +235,23 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Stream を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "stream-worker",
+				"stream": {"binding": "STREAM"}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.Stream == nil {
+					t.Error("Stream is nil")
+					return
+				}
+				if cfg.Stream.Binding != "STREAM" {
+					t.Errorf("Stream.Binding = %q, want %q", cfg.Stream.Binding, "STREAM")
+				}
+			},
+		},
+		{
 			name:     "JSON で Workers AI を含む設定",
 			filename: "wrangler.json",
 			content: `{

@@ -177,6 +177,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		AI: firstBinding(env, "ai", func(binding string) AIConfig {
 			return AIConfig{Binding: binding}
 		}),
+		Stream: firstBinding(env, "stream", func(binding string) StreamConfig {
+			return StreamConfig{Binding: binding}
+		}),
 		AISearch: collectBindings(env, "ai-search", func(binding string, instance workerBinding) (AISearchInstance, bool) {
 			return AISearchInstance{Binding: binding, InstanceName: instance.Name}, instance.Name != ""
 		}),

@@ -327,6 +327,16 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Stream",
+			config: &config.Config{
+				Stream: &config.StreamConfig{Binding: "STREAM"},
+			},
+			wantTypes: []ResourceType{ResourceTypeStream},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeStream: "https://dash.cloudflare.com/acc/stream/videos",
+			},
+		},
+		{
 			name: "AI Search",
 			config: &config.Config{
 				AISearch: []config.AISearchInstance{
@@ -482,6 +492,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				Containers:              []config.Container{{Name: "app"}},
 				Browser:                 &config.BrowserConfig{Binding: "BROWSER"},
 				AI:                      &config.AIConfig{Binding: "AI"},
+				Stream:                  &config.StreamConfig{Binding: "STREAM"},
 				AISearch:                []config.AISearchInstance{{Binding: "SEARCH", InstanceName: "instance"}},
 				AISearchNamespaces:      []config.AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "namespace"}},
 				AnalyticsEngineDatasets: []config.AnalyticsEngineDataset{{Binding: "EVENTS", Dataset: "dataset"}},
@@ -502,6 +513,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeContainers,
 				ResourceTypeBrowserRun,
 				ResourceTypeWorkersAI,
+				ResourceTypeStream,
 				ResourceTypeAISearch,
 				ResourceTypeAISearchNamespace,
 				ResourceTypeAnalyticsEngine,

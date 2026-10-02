@@ -564,6 +564,17 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Email Routing - サブドメインのアドレスは apex のゾーンを開く",
+			config: &config.Config{
+				Addresses: []string{"support@mail.example.co.jp", "*@example.co.jp"},
+			},
+			wantTypes: []ResourceType{ResourceTypeEmailRouting, ResourceTypeEmailRoutingDomain},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeEmailRouting:       "https://dash.cloudflare.com/acc/email-service/routing",
+				ResourceTypeEmailRoutingDomain: "https://dash.cloudflare.com/acc/example.co.jp/email/routing",
+			},
+		},
+		{
 			name: "Routes - Worker のルートとゾーンの Workers Routes",
 			config: &config.Config{
 				Name: "my-worker",

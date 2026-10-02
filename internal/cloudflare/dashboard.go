@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/mst-mkt/cf-open/internal/config"
+	"golang.org/x/net/publicsuffix"
 )
 
 const baseURL = "https://dash.cloudflare.com"
@@ -129,8 +130,14 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 
 	seenDomains := make(map[string]bool)
 	for _, address := range cfg.Addresses {
-		_, domain, ok := strings.Cut(address, "@")
-		if !ok || domain == "" || seenDomains[domain] {
+		_, host, ok := strings.Cut(address, "@")
+		if !ok {
+			continue
+		}
+
+		// Subdomain addresses are routed in the apex domain's zone.
+		domain, err := publicsuffix.EffectiveTLDPlusOne(host)
+		if err != nil || seenDomains[domain] {
 			continue
 		}
 		seenDomains[domain] = true

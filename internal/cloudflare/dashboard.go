@@ -106,13 +106,13 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 	}
 
 	// VPC
-	if len(cfg.VPCServices) > 0 {
-		vpcURL := "workers/vpc/services"
+	for _, service := range cfg.VPCServices {
+		vpcURL := fmt.Sprintf("workers/vpc/services/%s", service.ServiceID)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeVPC,
-			Name:        "vpc",
-			ID:          "vpc",
-			Description: "VPC Services",
+			Name:        service.Binding,
+			ID:          service.ServiceID,
+			Description: fmt.Sprintf("VPC Service: %s", service.ServiceID),
 			URL:         BuildDashboardURL(accountID, vpcURL, hasAccount),
 		})
 	}

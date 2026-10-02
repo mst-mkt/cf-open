@@ -281,7 +281,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 			wantTypes: []ResourceType{ResourceTypeVPC},
 			wantURLs: map[ResourceType]string{
-				ResourceTypeVPC: "https://dash.cloudflare.com/acc/workers/vpc/services",
+				ResourceTypeVPC: "https://dash.cloudflare.com/acc/workers/vpc/services/vpc-id",
 			},
 		},
 		{

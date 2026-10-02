@@ -338,6 +338,19 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Analytics Engine - 複数の dataset をまとめる",
+			config: &config.Config{
+				AnalyticsEngineDatasets: []config.AnalyticsEngineDataset{
+					{Binding: "EVENTS1", Dataset: "dataset-1"},
+					{Binding: "EVENTS2", Dataset: "dataset-2"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeAnalyticsEngine},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeAnalyticsEngine: "https://dash.cloudflare.com/acc/workers/analytics-engine",
+			},
+		},
+		{
 			name: "Images",
 			config: &config.Config{
 				Images: &config.ImagesConfig{Binding: "MY_IMAGES"},
@@ -402,13 +415,14 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				DurableObjects: &config.DurableObjectsConfig{
 					Bindings: []config.DurableObjectBinding{{Name: "DO", ClassName: "DO"}},
 				},
-				Browser:            &config.BrowserConfig{Binding: "BROWSER"},
-				AI:                 &config.AIConfig{Binding: "AI"},
-				AISearch:           []config.AISearchInstance{{Binding: "SEARCH", InstanceName: "instance"}},
-				AISearchNamespaces: []config.AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "namespace"}},
-				Images:             &config.ImagesConfig{Binding: "IMAGES"},
-				VPCServices:        []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
-				Triggers:           &config.TriggersConfig{Crons: []string{"* * * * *"}},
+				Browser:                 &config.BrowserConfig{Binding: "BROWSER"},
+				AI:                      &config.AIConfig{Binding: "AI"},
+				AISearch:                []config.AISearchInstance{{Binding: "SEARCH", InstanceName: "instance"}},
+				AISearchNamespaces:      []config.AISearchNamespace{{Binding: "SEARCH_NAMESPACE", Namespace: "namespace"}},
+				AnalyticsEngineDatasets: []config.AnalyticsEngineDataset{{Binding: "EVENTS", Dataset: "dataset"}},
+				Images:                  &config.ImagesConfig{Binding: "IMAGES"},
+				VPCServices:             []config.VPCService{{Binding: "VPC", ServiceID: "vpc"}},
+				Triggers:                &config.TriggersConfig{Crons: []string{"* * * * *"}},
 			},
 			wantTypes: []ResourceType{
 				ResourceTypeWorker,
@@ -421,6 +435,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeWorkersAI,
 				ResourceTypeAISearch,
 				ResourceTypeAISearchNamespace,
+				ResourceTypeAnalyticsEngine,
 				ResourceTypeVPC,
 				ResourceTypeR2,
 				ResourceTypeKV,

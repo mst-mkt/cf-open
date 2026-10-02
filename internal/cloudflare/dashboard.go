@@ -154,6 +154,19 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Analytics Engine
+	// Datasets have no page of their own, so open the list.
+	if len(cfg.AnalyticsEngineDatasets) > 0 {
+		analyticsEngineURL := "workers/analytics-engine"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeAnalyticsEngine,
+			Name:        "analytics-engine",
+			ID:          "analytics-engine",
+			Description: "Analytics Engine",
+			URL:         BuildDashboardURL(accountID, analyticsEngineURL, hasAccount),
+		})
+	}
+
 	// VPC
 	for _, service := range cfg.VPCServices {
 		vpcURL := fmt.Sprintf("workers/vpc/services/%s", service.ServiceID)

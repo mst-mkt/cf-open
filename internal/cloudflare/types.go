@@ -14,6 +14,7 @@ const (
 	ResourceTypeWorkersAI         ResourceType = "workers_ai"
 	ResourceTypeAISearch          ResourceType = "ai_search"
 	ResourceTypeAISearchNamespace ResourceType = "ai_search_namespace"
+	ResourceTypeAnalyticsEngine   ResourceType = "analytics_engine"
 	ResourceTypeVPC               ResourceType = "vpc"
 	ResourceTypeR2                ResourceType = "r2"
 	ResourceTypeKV                ResourceType = "kv"

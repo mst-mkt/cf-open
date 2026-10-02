@@ -177,6 +177,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		AISearchNamespaces: collectBindings(env, "ai-search-namespace", func(binding string, namespace workerBinding) (AISearchNamespace, bool) {
 			return AISearchNamespace{Binding: binding, Namespace: namespace.Namespace}, namespace.Namespace != ""
 		}),
+		AnalyticsEngineDatasets: collectBindings(env, "analytics-engine-dataset", func(binding string, dataset workerBinding) (AnalyticsEngineDataset, bool) {
+			return AnalyticsEngineDataset{Binding: binding, Dataset: dataset.Name}, true
+		}),
 		VPCServices: collectBindings(env, "vpc-service", func(binding string, service workerBinding) (VPCService, bool) {
 			return VPCService{Binding: binding, ServiceID: service.ID}, service.ID != ""
 		}),

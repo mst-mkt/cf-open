@@ -233,6 +233,25 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Analytics Engine を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "analytics-worker",
+				"analytics_engine_datasets": [
+					{"binding": "EVENTS", "dataset": "my-dataset"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.AnalyticsEngineDatasets) != 1 {
+					t.Errorf("len(AnalyticsEngineDatasets) = %d, want 1", len(cfg.AnalyticsEngineDatasets))
+					return
+				}
+				if cfg.AnalyticsEngineDatasets[0].Dataset != "my-dataset" {
+					t.Errorf("AnalyticsEngineDatasets[0].Dataset = %q, want %q", cfg.AnalyticsEngineDatasets[0].Dataset, "my-dataset")
+				}
+			},
+		},
+		{
 			name:     "JSON で AI Search を含む設定",
 			filename: "wrangler.json",
 			content: `{

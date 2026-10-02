@@ -47,6 +47,7 @@ type Config struct {
 	D1Databases             []D1Database             `json:"d1_databases" toml:"d1_databases"`
 	Hyperdrive              []Hyperdrive             `json:"hyperdrive" toml:"hyperdrive"`
 	Pipelines               []Pipeline               `json:"pipelines" toml:"pipelines"`
+	K2                      []K2                     `json:"k2" toml:"k2"`
 	Vectorize               []VectorizeIndex         `json:"vectorize" toml:"vectorize"`
 	SecretsStoreSecrets     []SecretsStoreSecret     `json:"secrets_store_secrets" toml:"secrets_store_secrets"`
 	Images                  *ImagesConfig            `json:"images" toml:"images"`
@@ -210,6 +211,11 @@ type Pipeline struct {
 	Binding  string `json:"binding" toml:"binding"`
 	Stream   string `json:"stream" toml:"stream"`
 	Pipeline string `json:"pipeline" toml:"pipeline"`
+}
+
+type K2 struct {
+	Binding string `json:"binding" toml:"binding"`
+	Stream  string `json:"stream" toml:"stream"`
 }
 
 type VectorizeIndex struct {

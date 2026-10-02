@@ -258,6 +258,18 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "K2",
+			config: &config.Config{
+				K2: []config.K2{
+					{Binding: "LOGS", Stream: "k2-stream-id"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeK2},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeK2: "https://dash.cloudflare.com/acc/k2/k2-stream-id",
+			},
+		},
+		{
 			name: "Pipeline",
 			config: &config.Config{
 				Pipelines: []config.Pipeline{
@@ -578,6 +590,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				Workflows:     []config.Workflow{{Binding: "WF", Name: "workflow", ClassName: "WF"}},
 				Vectorize:     []config.VectorizeIndex{{Binding: "VEC", IndexName: "index"}},
 				Pipelines:     []config.Pipeline{{Binding: "PIPE", Pipeline: "pipeline"}},
+				K2:            []config.K2{{Binding: "LOGS", Stream: "k2-stream"}},
 				SecretsStoreSecrets: []config.SecretsStoreSecret{
 					{Binding: "SEC", StoreID: "store", SecretName: "secret"},
 				},
@@ -623,6 +636,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeD1,
 				ResourceTypeHyperdrive,
 				ResourceTypePipeline,
+				ResourceTypeK2,
 				ResourceTypeVectorize,
 				ResourceTypeSecretsStore,
 				ResourceTypeImages,

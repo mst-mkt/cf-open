@@ -456,6 +456,18 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// K2
+	for _, k2 := range cfg.K2 {
+		k2URL := fmt.Sprintf("k2/%s", k2.Stream)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeK2,
+			Name:        k2.Binding,
+			ID:          k2.Stream,
+			Description: fmt.Sprintf("K2: %s", k2.Stream),
+			URL:         BuildDashboardURL(accountID, k2URL, hasAccount),
+		})
+	}
+
 	// Vectorize
 	for _, vectorize := range cfg.Vectorize {
 		vectorizeURL := fmt.Sprintf("ai/vectorize/%s", vectorize.IndexName)

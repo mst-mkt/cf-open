@@ -91,6 +91,7 @@ type workerBinding struct {
 	SecretName   string          `json:"secretName"`
 	ExportName   string          `json:"exportName"`
 	Worker       workerReference `json:"worker"`
+	Stream       string          `json:"stream"`
 }
 
 func loadTypeScriptConfig(configPath, mode string) (*Config, error) {
@@ -257,6 +258,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		}),
 		Pipelines: collectBindings(env, "pipeline", func(binding string, pipeline workerBinding) (Pipeline, bool) {
 			return Pipeline{Binding: binding, Pipeline: pipeline.Name}, pipeline.Name != ""
+		}),
+		K2: collectBindings(env, "k2", func(binding string, k2 workerBinding) (K2, bool) {
+			return K2{Binding: binding, Stream: k2.Stream}, k2.Stream != ""
 		}),
 		Vectorize: collectBindings(env, "vectorize", func(binding string, index workerBinding) (VectorizeIndex, bool) {
 			return VectorizeIndex{Binding: binding, IndexName: index.Name}, index.Name != ""

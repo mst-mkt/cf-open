@@ -35,6 +35,7 @@ const (
 	ResourceTypeD1                 ResourceType = "d1"
 	ResourceTypeHyperdrive         ResourceType = "hyperdrive"
 	ResourceTypePipeline           ResourceType = "pipeline"
+	ResourceTypeK2                 ResourceType = "k2"
 	ResourceTypeVectorize          ResourceType = "vectorize"
 	ResourceTypeSecretsStore       ResourceType = "secrets_store"
 	ResourceTypeImages             ResourceType = "images"

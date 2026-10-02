@@ -656,6 +656,21 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で K2 を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "k2-worker",
+				"k2": [
+					{"binding": "LOGS", "stream": "k2-stream-id"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.K2) != 1 || cfg.K2[0].Stream != "k2-stream-id" {
+					t.Errorf("K2 = %+v, want k2-stream-id", cfg.K2)
+				}
+			},
+		},
+		{
 			name:     "JSON で Media を含む設定",
 			filename: "wrangler.json",
 			content: `{

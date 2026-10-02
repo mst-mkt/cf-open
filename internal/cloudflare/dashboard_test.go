@@ -161,7 +161,22 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 			wantTypes: []ResourceType{ResourceTypeQueue},
 			wantURLs: map[ResourceType]string{
-				ResourceTypeQueue: "https://dash.cloudflare.com/acc/workers/queues/my-queue/metrics",
+				ResourceTypeQueue: "https://dash.cloudflare.com/acc/workers/queues",
+			},
+		},
+		{
+			name: "Queue - 複数の queue をまとめる",
+			config: &config.Config{
+				Queues: &config.QueuesConfig{
+					Producers: []config.QueueProducer{
+						{Binding: "QUEUE1", Queue: "queue-1"},
+						{Binding: "QUEUE2", Queue: "queue-2"},
+					},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeQueue},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeQueue: "https://dash.cloudflare.com/acc/workers/queues",
 			},
 		},
 		{

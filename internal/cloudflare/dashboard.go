@@ -69,17 +69,16 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 	}
 
 	// Queues
-	if cfg.Queues != nil {
-		for _, producer := range cfg.Queues.Producers {
-			queueURL := fmt.Sprintf("workers/queues/%s/metrics", producer.Queue)
-			resources = append(resources, Resource{
-				Type:        ResourceTypeQueue,
-				Name:        producer.Binding,
-				ID:          producer.Queue,
-				Description: fmt.Sprintf("Queue: %s", producer.Queue),
-				URL:         BuildDashboardURL(accountID, queueURL, hasAccount),
-			})
-		}
+	// The detail page is addressed by queue ID, not the name in the config, so open the list.
+	if cfg.Queues != nil && len(cfg.Queues.Producers) > 0 {
+		queueURL := "workers/queues"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeQueue,
+			Name:        "queues",
+			ID:          "queues",
+			Description: "Queues",
+			URL:         BuildDashboardURL(accountID, queueURL, hasAccount),
+		})
 	}
 
 	// Workflows

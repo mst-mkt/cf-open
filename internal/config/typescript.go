@@ -36,6 +36,32 @@ type workerDefinition struct {
 	Triggers      []workerTrigger          `json:"triggers"`
 	Env           map[string]workerBinding `json:"env"`
 	Exports       map[string]workerExport  `json:"exports"`
+	TailConsumers []workerTailConsumer     `json:"tailConsumers"`
+}
+
+type workerTailConsumer struct {
+	Worker    string `json:"worker"`
+	Streaming bool   `json:"streaming"`
+}
+
+type workerReference string
+
+func (w *workerReference) UnmarshalJSON(data []byte) error {
+	var name string
+	if err := json.Unmarshal(data, &name); err == nil {
+		*w = workerReference(name)
+		return nil
+	}
+
+	var definition struct {
+		Name string `json:"name"`
+	}
+	if err := json.Unmarshal(data, &definition); err != nil {
+		return err
+	}
+
+	*w = workerReference(definition.Name)
+	return nil
 }
 
 type workerTrigger struct {
@@ -52,16 +78,17 @@ type workerExport struct {
 }
 
 type workerBinding struct {
-	Type         string `json:"type"`
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	Jurisdiction string `json:"jurisdiction"`
-	Namespace    string `json:"namespace"`
-	TunnelID     string `json:"tunnelId"`
-	NetworkID    string `json:"networkId"`
-	StoreID      string `json:"storeId"`
-	SecretName   string `json:"secretName"`
-	ExportName   string `json:"exportName"`
+	Type         string          `json:"type"`
+	ID           string          `json:"id"`
+	Name         string          `json:"name"`
+	Jurisdiction string          `json:"jurisdiction"`
+	Namespace    string          `json:"namespace"`
+	TunnelID     string          `json:"tunnelId"`
+	NetworkID    string          `json:"networkId"`
+	StoreID      string          `json:"storeId"`
+	SecretName   string          `json:"secretName"`
+	ExportName   string          `json:"exportName"`
+	Worker       workerReference `json:"worker"`
 }
 
 func loadTypeScriptConfig(configPath, mode string) (*Config, error) {
@@ -204,6 +231,11 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		Flagship: collectBindings(env, "flagship", func(binding string, flagship workerBinding) (Flagship, bool) {
 			return Flagship{Binding: binding, AppID: flagship.ID}, true
 		}),
+		Services: collectBindings(env, "worker", func(binding string, service workerBinding) (Service, bool) {
+			return Service{Binding: binding, Service: string(service.Worker)}, service.Worker != ""
+		}),
+		TailConsumers:          tailConsumers(worker.TailConsumers, false),
+		StreamingTailConsumers: tailConsumers(worker.TailConsumers, true),
 		R2Buckets: collectBindings(env, "r2", func(binding string, bucket workerBinding) (R2Bucket, bool) {
 			return R2Bucket{Binding: binding, BucketName: bucket.Name, Jurisdiction: bucket.Jurisdiction}, bucket.Name != ""
 		}),
@@ -282,6 +314,18 @@ func cronTriggers(triggers []workerTrigger) *TriggersConfig {
 	}
 
 	return &TriggersConfig{Crons: crons}
+}
+
+func tailConsumers(consumers []workerTailConsumer, streaming bool) []TailConsumer {
+	var collected []TailConsumer
+
+	for _, consumer := range consumers {
+		if consumer.Worker != "" && consumer.Streaming == streaming {
+			collected = append(collected, TailConsumer{Service: consumer.Worker})
+		}
+	}
+
+	return collected
 }
 
 func fetchRoutes(triggers []workerTrigger) []Route {

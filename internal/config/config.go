@@ -36,6 +36,9 @@ type Config struct {
 	VPCServices             []VPCService             `json:"vpc_services" toml:"vpc_services"`
 	VPCNetworks             []VPCNetwork             `json:"vpc_networks" toml:"vpc_networks"`
 	Flagship                []Flagship               `json:"flagship" toml:"flagship"`
+	Services                []Service                `json:"services" toml:"services"`
+	TailConsumers           []TailConsumer           `json:"tail_consumers" toml:"tail_consumers"`
+	StreamingTailConsumers  []TailConsumer           `json:"streaming_tail_consumers" toml:"streaming_tail_consumers"`
 	R2Buckets               []R2Bucket               `json:"r2_buckets" toml:"r2_buckets"`
 	KVNamespaces            []KVNamespace            `json:"kv_namespaces" toml:"kv_namespaces"`
 	D1Databases             []D1Database             `json:"d1_databases" toml:"d1_databases"`
@@ -161,6 +164,15 @@ type VPCNetwork struct {
 type Flagship struct {
 	Binding string `json:"binding" toml:"binding"`
 	AppID   string `json:"app_id" toml:"app_id"`
+}
+
+type Service struct {
+	Binding string `json:"binding" toml:"binding"`
+	Service string `json:"service" toml:"service"`
+}
+
+type TailConsumer struct {
+	Service string `json:"service" toml:"service"`
 }
 
 type R2Bucket struct {

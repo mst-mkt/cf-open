@@ -297,6 +297,42 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Service Bindings
+	seenServices := make(map[string]bool)
+	for _, service := range cfg.Services {
+		if service.Service == "" || seenServices[service.Service] {
+			continue
+		}
+		seenServices[service.Service] = true
+
+		serviceURL := fmt.Sprintf("workers/services/view/%s/production", service.Service)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeService,
+			Name:        service.Binding,
+			ID:          service.Service,
+			Description: fmt.Sprintf("Service: %s", service.Service),
+			URL:         BuildDashboardURL(accountID, serviceURL, hasAccount),
+		})
+	}
+
+	// Tail Workers
+	seenTailWorkers := make(map[string]bool)
+	for _, consumer := range append(cfg.TailConsumers, cfg.StreamingTailConsumers...) {
+		if consumer.Service == "" || seenTailWorkers[consumer.Service] {
+			continue
+		}
+		seenTailWorkers[consumer.Service] = true
+
+		tailWorkerURL := fmt.Sprintf("workers/services/view/%s/production", consumer.Service)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeTailWorker,
+			Name:        consumer.Service,
+			ID:          consumer.Service,
+			Description: fmt.Sprintf("Tail Worker: %s", consumer.Service),
+			URL:         BuildDashboardURL(accountID, tailWorkerURL, hasAccount),
+		})
+	}
+
 	// R2 Object Storage
 	for _, bucket := range cfg.R2Buckets {
 		jurisdiction := bucket.Jurisdiction

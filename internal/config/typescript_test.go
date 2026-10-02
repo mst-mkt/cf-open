@@ -252,6 +252,7 @@ func TestToConfig(t *testing.T) {
 						{"type": "queue", "name": "consumed-queue"},
 						{"type": "scheduled", "schedule": "0 0 * * *"}
 					],
+					"tailConsumers": [{"worker": "tail-worker"}, {"worker": "streaming-tail-worker", "streaming": true}],
 					"env": {
 						"DB": {"type": "d1", "name": "my-db", "id": "db-id"},
 						"BUCKET": {"type": "r2", "name": "my-bucket", "jurisdiction": "eu"},
@@ -264,6 +265,8 @@ func TestToConfig(t *testing.T) {
 						"VPC": {"type": "vpc-service", "id": "vpc-id"},
 						"NETWORK": {"type": "vpc-network", "tunnelId": "tunnel-id"},
 						"FLAGS": {"type": "flagship", "id": "app-id"},
+						"API": {"type": "worker", "worker": "api-worker"},
+						"AUTH": {"type": "worker", "worker": {"name": "auth-worker"}, "exportName": "Auth"},
 						"BROWSER": {"type": "browser"},
 						"AI": {"type": "ai"},
 						"STREAM": {"type": "stream"},
@@ -295,6 +298,9 @@ func TestToConfig(t *testing.T) {
 				VPCServices:             []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
 				VPCNetworks:             []VPCNetwork{{Binding: "NETWORK", TunnelID: "tunnel-id"}},
 				Flagship:                []Flagship{{Binding: "FLAGS", AppID: "app-id"}},
+				Services:                []Service{{Binding: "API", Service: "api-worker"}, {Binding: "AUTH", Service: "auth-worker"}},
+				TailConsumers:           []TailConsumer{{Service: "tail-worker"}},
+				StreamingTailConsumers:  []TailConsumer{{Service: "streaming-tail-worker"}},
 				R2Buckets:               []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
 				KVNamespaces:            []KVNamespace{{Binding: "CACHE", ID: "kv-id"}},
 				D1Databases:             []D1Database{{Binding: "DB", DatabaseName: "my-db", DatabaseID: "db-id"}},

@@ -378,6 +378,33 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Service Binding と Tail Worker を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "service-worker",
+				"services": [
+					{"binding": "API", "service": "api-worker"}
+				],
+				"tail_consumers": [
+					{"service": "tail-worker"}
+				],
+				"streaming_tail_consumers": [
+					{"service": "streaming-tail-worker"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Services) != 1 || cfg.Services[0].Service != "api-worker" {
+					t.Errorf("Services = %+v, want api-worker", cfg.Services)
+				}
+				if len(cfg.TailConsumers) != 1 || cfg.TailConsumers[0].Service != "tail-worker" {
+					t.Errorf("TailConsumers = %+v, want tail-worker", cfg.TailConsumers)
+				}
+				if len(cfg.StreamingTailConsumers) != 1 || cfg.StreamingTailConsumers[0].Service != "streaming-tail-worker" {
+					t.Errorf("StreamingTailConsumers = %+v, want streaming-tail-worker", cfg.StreamingTailConsumers)
+				}
+			},
+		},
+		{
 			name:     "JSON で Flagship を含む設定",
 			filename: "wrangler.json",
 			content: `{

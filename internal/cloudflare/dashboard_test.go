@@ -447,6 +447,30 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Service Binding - 同じ参照先をまとめる",
+			config: &config.Config{
+				Services: []config.Service{
+					{Binding: "API", Service: "api-worker"},
+					{Binding: "API_ADMIN", Service: "api-worker"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeService},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeService: "https://dash.cloudflare.com/acc/workers/services/view/api-worker/production",
+			},
+		},
+		{
+			name: "Tail Worker - 通常とストリーミングをまとめる",
+			config: &config.Config{
+				TailConsumers:          []config.TailConsumer{{Service: "tail-worker"}},
+				StreamingTailConsumers: []config.TailConsumer{{Service: "tail-worker"}},
+			},
+			wantTypes: []ResourceType{ResourceTypeTailWorker},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeTailWorker: "https://dash.cloudflare.com/acc/workers/services/view/tail-worker/production",
+			},
+		},
+		{
 			name: "Cron Triggers",
 			config: &config.Config{
 				Name: "my-worker",

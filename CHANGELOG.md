@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.2.0](https://github.com/mst-mkt/cf-open/compare/v0.1.0...v0.2.0) - 2026-10-02
+
+- fix: Support cloudflare.config.ts for cloudflare/cf by @mst-mkt in https://github.com/mst-mkt/cf-open/pull/8
+- fix: Open the right dashboard page for each resource by @mst-mkt in https://github.com/mst-mkt/cf-open/pull/10
+- feat: Support more resources by @mst-mkt in https://github.com/mst-mkt/cf-open/pull/11
+
 ## [v0.1.0](https://github.com/mst-mkt/cf-open/compare/v0.0.2...v0.1.0) - 2026-08-17
 
 - feat: Support `cloudflare.config.ts` by @mst-mkt in https://github.com/mst-mkt/cf-open/pull/7

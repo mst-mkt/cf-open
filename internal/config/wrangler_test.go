@@ -6,14 +6,14 @@ import (
 	"testing"
 )
 
-func TestLoadWranglerConfig(t *testing.T) {
+func TestLoad(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name     string
 		filename string
 		content  string
-		validate func(t *testing.T, cfg *WranglerConfig)
+		validate func(t *testing.T, cfg *Config)
 		wantErr  bool
 	}{
 		{
@@ -24,7 +24,7 @@ func TestLoadWranglerConfig(t *testing.T) {
 				"account_id": "abc123",
 				"compatibility_date": "2024-01-01"
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Name != "my-worker" {
 					t.Errorf("Name = %q, want %q", cfg.Name, "my-worker")
 				}
@@ -38,7 +38,7 @@ func TestLoadWranglerConfig(t *testing.T) {
 				"name": "worker-with-comment",
 				"account_id": "xyz789"
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Name != "worker-with-comment" {
 					t.Errorf("Name = %q, want %q", cfg.Name, "worker-with-comment")
 				}
@@ -52,7 +52,7 @@ name = "toml-worker"
 account_id = "abc123"
 compatibility_date = "2024-01-01"
 `,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Name != "toml-worker" {
 					t.Errorf("Name = %q, want %q", cfg.Name, "toml-worker")
 				}
@@ -65,7 +65,7 @@ compatibility_date = "2024-01-01"
 				"name": "obs-worker",
 				"observability": {"enabled": true}
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Observability == nil {
 					t.Error("Observability is nil")
 					return
@@ -82,7 +82,7 @@ compatibility_date = "2024-01-01"
 				"name": "cron-worker",
 				"triggers": {"crons": ["0 * * * *", "0 0 * * *"]}
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Triggers == nil {
 					t.Error("Triggers is nil")
 					return
@@ -103,7 +103,7 @@ compatibility_date = "2024-01-01"
 					]
 				}
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Queues == nil {
 					t.Error("Queues is nil")
 					return
@@ -125,7 +125,7 @@ compatibility_date = "2024-01-01"
 					{"binding": "MY_WORKFLOW", "name": "my-workflow", "class_name": "MyWorkflow"}
 				]
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.Workflows) != 1 {
 					t.Errorf("len(Workflows) = %d, want 1", len(cfg.Workflows))
 					return
@@ -142,7 +142,7 @@ compatibility_date = "2024-01-01"
 				"name": "browser-worker",
 				"browser": {"binding": "MY_BROWSER"}
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Browser == nil {
 					t.Error("Browser is nil")
 					return
@@ -161,7 +161,7 @@ compatibility_date = "2024-01-01"
 					{"binding": "MY_VPC", "service_id": "vpc-service-id"}
 				]
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.VPCServices) != 1 {
 					t.Errorf("len(VPCServices) = %d, want 1", len(cfg.VPCServices))
 					return
@@ -180,7 +180,7 @@ compatibility_date = "2024-01-01"
 					{"binding": "BUCKET", "bucket_name": "my-bucket"}
 				]
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.R2Buckets) != 1 {
 					t.Errorf("len(R2Buckets) = %d, want 1", len(cfg.R2Buckets))
 					return
@@ -200,7 +200,7 @@ compatibility_date = "2024-01-01"
 					{"binding": "KV2", "id": "kv-id-2"}
 				]
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.KVNamespaces) != 2 {
 					t.Errorf("len(KVNamespaces) = %d, want 2", len(cfg.KVNamespaces))
 				}
@@ -215,7 +215,7 @@ compatibility_date = "2024-01-01"
 					{"binding": "DB", "database_name": "test-db", "database_id": "db-123"}
 				]
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.D1Databases) != 1 {
 					t.Errorf("len(D1Databases) = %d, want 1", len(cfg.D1Databases))
 					return
@@ -234,7 +234,7 @@ compatibility_date = "2024-01-01"
 					{"binding": "MY_PIPELINE", "pipeline": "my-pipeline"}
 				]
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.Pipelines) != 1 {
 					t.Errorf("len(Pipelines) = %d, want 1", len(cfg.Pipelines))
 					return
@@ -253,7 +253,7 @@ compatibility_date = "2024-01-01"
 					{"binding": "MY_VECTORIZE", "index_name": "my-index"}
 				]
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.Vectorize) != 1 {
 					t.Errorf("len(Vectorize) = %d, want 1", len(cfg.Vectorize))
 					return
@@ -272,7 +272,7 @@ compatibility_date = "2024-01-01"
 					{"binding": "MY_SECRET", "store_id": "store-123", "secret_name": "my-secret"}
 				]
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.SecretsStoreSecrets) != 1 {
 					t.Errorf("len(SecretsStoreSecrets) = %d, want 1", len(cfg.SecretsStoreSecrets))
 					return
@@ -289,7 +289,7 @@ compatibility_date = "2024-01-01"
 				"name": "images-worker",
 				"images": {"binding": "MY_IMAGES"}
 			}`,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Images == nil {
 					t.Error("Images is nil")
 					return
@@ -313,7 +313,7 @@ id = "kv-id-1"
 binding = "KV2"
 id = "kv-id-2"
 `,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if len(cfg.KVNamespaces) != 2 {
 					t.Errorf("len(KVNamespaces) = %d, want 2", len(cfg.KVNamespaces))
 				}
@@ -330,7 +330,7 @@ name = "queue-toml-worker"
 binding = "MY_QUEUE"
 queue = "my-queue"
 `,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Queues == nil {
 					t.Error("Queues is nil")
 					return
@@ -349,7 +349,7 @@ name = "cron-toml-worker"
 [triggers]
 crons = ["0 * * * *"]
 `,
-			validate: func(t *testing.T, cfg *WranglerConfig) {
+			validate: func(t *testing.T, cfg *Config) {
 				if cfg.Triggers == nil {
 					t.Error("Triggers is nil")
 					return
@@ -384,9 +384,9 @@ crons = ["0 * * * *"]
 				t.Fatalf("テスト設定ファイルの書き込みに失敗: %v", err)
 			}
 
-			got, err := LoadWranglerConfig(configPath)
+			got, err := Load(Options{Path: configPath})
 			if (err != nil) != tt.wantErr {
-				t.Errorf("LoadWranglerConfig() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Load() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -398,23 +398,5 @@ crons = ["0 * * * *"]
 				tt.validate(t, got)
 			}
 		})
-	}
-}
-
-func TestLoadWranglerConfig_FileNotFound(t *testing.T) {
-	t.Parallel()
-
-	_, err := LoadWranglerConfig("/nonexistent/path/wrangler.json")
-	if err == nil {
-		t.Error("LoadWranglerConfig() expected error for nonexistent file, got nil")
-	}
-}
-
-func TestLoadWranglerConfig_EmptyPath(t *testing.T) {
-	t.Parallel()
-
-	_, err := LoadWranglerConfig("")
-	if err == nil {
-		t.Error("LoadWranglerConfig() expected error for empty path with no wrangler config, got nil")
 	}
 }

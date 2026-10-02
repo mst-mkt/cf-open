@@ -2,7 +2,6 @@ import { writeFileSync, writeSync } from "node:fs";
 import * as nodeModule from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const DEFINITION = Symbol.for("@cloudflare/config:definition");
 const WORKER_TYPE = "cf-worker";
 const WORKER_SCHEME = "cf-worker:";
 
@@ -52,29 +51,23 @@ const registerConfigHooks = () =>
     },
   });
 
-const resolveExport = async (value, ctx) => {
-  if (!isRecord(value) || !(DEFINITION in value)) return unwrap(value, ctx);
-
-  const { config, type } = value[DEFINITION];
-  const resolved = await unwrap(config, ctx);
-
-  return isRecord(resolved) ? { ...resolved, type } : resolved;
-};
-
 const resolveConfig = async (configPath, ctx) => {
   registerConfigHooks();
 
   const config = await import(pathToFileURL(configPath).href);
-  const worker = await resolveExport(config.default, ctx);
+  if (!("default" in config)) throw new Error("the config has no default export");
 
-  if (!isRecord(worker) || worker.type !== "worker") {
-    throw new Error("the default export must be a worker");
+  const root = await unwrap(config.default, ctx);
+  if (!isRecord(root)) throw new Error("the default export must be an object");
+
+  if (root.accountId !== undefined && typeof root.accountId !== "string") {
+    throw new Error("accountId must be a string");
   }
 
-  const settings =
-    config.settings === undefined ? undefined : await resolveExport(config.settings, ctx);
+  const worker = root.worker === undefined ? undefined : await unwrap(root.worker, ctx);
+  if (worker != null && !isRecord(worker)) throw new Error("the worker must be an object");
 
-  return { worker, settings };
+  return { accountId: root.accountId, worker };
 };
 
 const main = async () => {
@@ -88,7 +81,7 @@ const main = async () => {
     throw new Error("reading cloudflare.config.ts requires Node.js v22.18.0 or later");
   }
 
-  const result = await resolveConfig(configPath, { mode }).catch((error) => {
+  const result = await resolveConfig(configPath, { mode, isPreview: false }).catch((error) => {
     throw new Error(`failed to load ${configPath}: ${reasonOf(error)}`);
   });
 

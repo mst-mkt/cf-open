@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 
 	"github.com/mst-mkt/cf-open/internal"
 	"github.com/mst-mkt/cf-open/internal/cloudflare"
@@ -14,10 +15,11 @@ import (
 var version = "dev"
 
 type options struct {
-	wranglerConfig string
-	accountID      string
-	all            bool
-	print          bool
+	config    string
+	accountID string
+	all       bool
+	print     bool
+	mode      string
 }
 
 var opts options
@@ -32,16 +34,16 @@ var rootCmd = &cobra.Command{
 }
 
 func run(opts options) error {
-	wranglerConfig, err := config.LoadWranglerConfig(opts.wranglerConfig)
+	cfg, err := config.Load(config.Options{Path: opts.config, Mode: opts.mode})
 	if err != nil {
-		return fmt.Errorf("failed to load wrangler config: %w", err)
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
-	accountID, hasAccount := config.GetAccountID(wranglerConfig, opts.accountID)
+	accountID, hasAccount := config.GetAccountID(cfg, opts.accountID)
 
-	resources := cloudflare.GetResourcesFromConfig(wranglerConfig, accountID, hasAccount)
+	resources := cloudflare.GetResourcesFromConfig(cfg, accountID, hasAccount)
 	if len(resources) == 0 {
-		return fmt.Errorf("no resources found in wrangler config")
+		return fmt.Errorf("no resources found in %s", cfg.Path)
 	}
 
 	urls, err := selectURLs(resources, opts.all)
@@ -83,10 +85,18 @@ func outputURLs(urls []string, printOnly bool) error {
 }
 
 func init() {
-	rootCmd.Flags().StringVarP(&opts.wranglerConfig, "wrangler-config", "c", "", "Path to wrangler configuration file")
+	rootCmd.Flags().StringVarP(&opts.config, "config", "c", "", "Path to the config file (cloudflare.config.ts, wrangler.jsonc, wrangler.json or wrangler.toml)")
 	rootCmd.Flags().StringVar(&opts.accountID, "account-id", "", "Cloudflare account ID")
 	rootCmd.Flags().BoolVarP(&opts.all, "all", "a", false, "Open all resources in the browser")
 	rootCmd.Flags().BoolVarP(&opts.print, "print", "p", false, "Print URL to stdout instead of opening in browser")
+	rootCmd.Flags().StringVarP(&opts.mode, "mode", "m", "", "Mode passed to a function-form cloudflare.config.ts")
+	rootCmd.Flags().SetNormalizeFunc(func(_ *pflag.FlagSet, name string) pflag.NormalizedName {
+		if name == "wrangler-config" {
+			name = "config"
+		}
+
+		return pflag.NormalizedName(name)
+	})
 }
 
 func main() {

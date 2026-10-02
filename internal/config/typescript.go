@@ -25,8 +25,8 @@ const (
 )
 
 type typeScriptConfig struct {
-	Worker   *workerDefinition   `json:"worker"`
-	Settings *settingsDefinition `json:"settings"`
+	AccountID string            `json:"accountId"`
+	Worker    *workerDefinition `json:"worker"`
 }
 
 type workerDefinition struct {
@@ -34,11 +34,17 @@ type workerDefinition struct {
 	Observability *ObservabilityConfig     `json:"observability"`
 	Triggers      []workerTrigger          `json:"triggers"`
 	Env           map[string]workerBinding `json:"env"`
+	Exports       map[string]workerExport  `json:"exports"`
 }
 
 type workerTrigger struct {
 	Type     string `json:"type"`
 	Schedule string `json:"schedule"`
+}
+
+type workerExport struct {
+	Type string `json:"type"`
+	Name string `json:"name"`
 }
 
 type workerBinding struct {
@@ -47,27 +53,16 @@ type workerBinding struct {
 	Name       string `json:"name"`
 	StoreID    string `json:"storeId"`
 	SecretName string `json:"secretName"`
+	ExportName string `json:"exportName"`
 }
 
-type settingsDefinition struct {
-	AccountID string `json:"accountId"`
-}
-
-func (settings *settingsDefinition) accountID() string {
-	if settings == nil {
-		return ""
-	}
-
-	return settings.AccountID
-}
-
-func loadTypeScriptConfig(configPath string) (*WranglerConfig, error) {
+func loadTypeScriptConfig(configPath, mode string) (*Config, error) {
 	node, err := exec.LookPath("node")
 	if err != nil {
 		return nil, errors.New("node not found in PATH; cloudflare.config.ts requires Node.js v22.18.0 or later")
 	}
 
-	output, err := runLoader(node, configPath, os.Getenv("CLOUDFLARE_ENV"))
+	output, err := runLoader(node, configPath, mode)
 	if err != nil {
 		return nil, err
 	}
@@ -81,11 +76,7 @@ func loadTypeScriptConfig(configPath string) (*WranglerConfig, error) {
 		return nil, fmt.Errorf("failed to parse the loaded config: %w", err)
 	}
 
-	if config.Worker == nil {
-		return nil, fmt.Errorf("no worker found in %s", configPath)
-	}
-
-	return toWranglerConfig(config.Worker, config.Settings), nil
+	return toConfig(config.Worker, config.AccountID), nil
 }
 
 func runLoader(node, configPath, mode string) ([]byte, error) {
@@ -156,15 +147,20 @@ func loaderError(configPath, stderr string, waitErr error) error {
 	return errors.New(message)
 }
 
-func toWranglerConfig(worker *workerDefinition, settings *settingsDefinition) *WranglerConfig {
+func toConfig(worker *workerDefinition, accountID string) *Config {
+	if worker == nil {
+		return &Config{AccountID: accountID}
+	}
+
 	env := worker.Env
 
-	return &WranglerConfig{
+	return &Config{
 		Name:          worker.Name,
-		AccountID:     settings.accountID(),
+		AccountID:     accountID,
 		Observability: worker.Observability,
 		Triggers:      cronTriggers(worker.Triggers),
 		Queues:        queuesConfig(env),
+		Workflows:     workflows(worker),
 		Browser: firstBinding(env, "browser", func(binding string) BrowserConfig {
 			return BrowserConfig{Binding: binding}
 		}),
@@ -258,4 +254,28 @@ func queuesConfig(env map[string]workerBinding) *QueuesConfig {
 	}
 
 	return &QueuesConfig{Producers: producers}
+}
+
+func workflows(worker *workerDefinition) []Workflow {
+	var collected []Workflow
+
+	add := func(workflow Workflow) {
+		if workflow.Name == "" || slices.ContainsFunc(collected, func(w Workflow) bool { return w.Name == workflow.Name }) {
+			return
+		}
+
+		collected = append(collected, workflow)
+	}
+
+	for binding, def := range bindingsOfKind(worker.Env, "workflow") {
+		add(Workflow{Binding: binding, Name: def.Name, ClassName: def.ExportName})
+	}
+
+	for _, exportName := range slices.Sorted(maps.Keys(worker.Exports)) {
+		if export := worker.Exports[exportName]; export.Type == "workflow" {
+			add(Workflow{Name: export.Name, ClassName: exportName})
+		}
+	}
+
+	return collected
 }

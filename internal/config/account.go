@@ -3,9 +3,8 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
-
-const defaultWranglerCachePath = "node_modules/.cache/wrangler/wrangler-account.json"
 
 type AccountInfo struct {
 	Account struct {
@@ -14,7 +13,7 @@ type AccountInfo struct {
 	} `json:"account"`
 }
 
-func GetAccountID(config *WranglerConfig, flagAccountID string) (string, bool) {
+func GetAccountID(config *Config, flagAccountID string) (string, bool) {
 	if flagAccountID != "" {
 		return flagAccountID, true
 	}
@@ -23,17 +22,27 @@ func GetAccountID(config *WranglerConfig, flagAccountID string) (string, bool) {
 		return config.AccountID, true
 	}
 
-	if accountID := getAccountFromCache(); accountID != "" {
+	if accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID"); accountID != "" {
+		return accountID, true
+	}
+
+	if accountID := getAccountFromCache(filepath.Dir(config.Path)); accountID != "" {
 		return accountID, true
 	}
 
 	return "", false
 }
 
-func getAccountFromCache() string {
-	cacheFile := defaultWranglerCachePath
+func getAccountFromCache(dir string) string {
+	if accountID := readAccountCache(filepath.Join(cacheFolder(dir, "cloudflare"), "cloudflare-account.json")); accountID != "" {
+		return accountID
+	}
 
-	data, err := os.ReadFile(cacheFile)
+	return readAccountCache(filepath.Join(cacheFolder(dir, "wrangler"), "wrangler-account.json"))
+}
+
+func readAccountCache(path string) string {
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return ""
 	}
@@ -44,4 +53,51 @@ func getAccountFromCache() string {
 	}
 
 	return accountInfo.Account.ID
+}
+
+func cacheFolder(dir, namespace string) string {
+	if namespace == "wrangler" {
+		if envCacheDir := os.Getenv("WRANGLER_CACHE_DIR"); envCacheDir != "" {
+			return envCacheDir
+		}
+	}
+
+	if absDir, err := filepath.Abs(dir); err == nil {
+		dir = absDir
+	}
+
+	localCache := filepath.Join(dir, "."+namespace, "cache")
+
+	nodeModules := findDirectoryUp(dir, "node_modules")
+	if nodeModules == "" {
+		return localCache
+	}
+
+	nodeModulesCache := filepath.Join(nodeModules, ".cache", namespace)
+	if exists(nodeModulesCache) || !exists(localCache) {
+		return nodeModulesCache
+	}
+
+	return localCache
+}
+
+func findDirectoryUp(dir, name string) string {
+	for {
+		path := filepath.Join(dir, name)
+		if info, err := os.Stat(path); err == nil && info.IsDir() {
+			return path
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return ""
+		}
+
+		dir = parent
+	}
+}
+
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }

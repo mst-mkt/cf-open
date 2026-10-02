@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestLoadWranglerConfig_TypeScript(t *testing.T) {
+func TestLoad_TypeScript(t *testing.T) {
 	t.Parallel()
 	requireNode(t)
 
@@ -19,25 +19,29 @@ func TestLoadWranglerConfig_TypeScript(t *testing.T) {
 		name    string
 		content string
 		files   map[string]string
-		want    *WranglerConfig
+		want    *Config
 		wantErr string
 	}{
 		{
-			name: "プレーンオブジェクト形式",
+			name: "オブジェクト形式",
 			content: `export default {
-  type: 'worker',
-  name: 'plain-worker',
-  observability: { enabled: true },
-  triggers: [{ type: 'scheduled', schedule: '0 * * * *' }],
-  env: {
-    DB: { type: 'd1', name: 'my-db', id: 'db-id' },
-    SECRET: { type: 'secrets-store-secret', storeId: 'store-id', secretName: 'my-secret' },
-    VPC: { type: 'vpc-service', id: 'vpc-id' },
+  accountId: 'acc-123',
+  worker: {
+    name: 'plain-worker',
+    compatibilityDate: '2026-09-30',
+    observability: { enabled: true },
+    triggers: [{ type: 'scheduled', schedule: '0 * * * *' }],
+    env: {
+      DB: { type: 'd1', name: 'my-db', id: 'db-id' },
+      SECRET: { type: 'secrets-store-secret', storeId: 'store-id', secretName: 'my-secret' },
+      VPC: { type: 'vpc-service', id: 'vpc-id' },
+    },
   },
 }
 `,
-			want: &WranglerConfig{
+			want: &Config{
 				Name:                "plain-worker",
+				AccountID:           "acc-123",
 				Observability:       &ObservabilityConfig{Enabled: true},
 				Triggers:            &TriggersConfig{Crons: []string{"0 * * * *"}},
 				VPCServices:         []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
@@ -46,57 +50,93 @@ func TestLoadWranglerConfig_TypeScript(t *testing.T) {
 			},
 		},
 		{
-			name: "defineWorker ヘルパー形式 + entrypoint import",
+			name: "関数形式の worker + entrypoint import",
 			content: `import * as entrypoint from './src/index.ts' with { type: 'cf-worker' }
 
-const DEFINITION = Symbol.for('@cloudflare/config:definition')
-const defineWorker = (config) => ({ [DEFINITION]: { config, type: 'worker' } })
-const defineSettings = (config) => ({ [DEFINITION]: { config, type: 'settings' } })
-
-export const settings = defineSettings({ accountId: 'acc-123' })
-
-export default defineWorker(async () => ({
-  name: 'helper-worker',
+const worker = async () => ({
+  name: 'function-worker',
   entrypoint,
   env: { DB: { type: 'd1', name: 'my-db', id: 'db-id' } },
-}))
+})
+
+export default () => ({ accountId: 'acc-123', worker })
 `,
 			files: map[string]string{
 				"src/index.ts": "throw new Error('the entrypoint must not be evaluated')\n",
 			},
-			want: &WranglerConfig{
-				Name:        "helper-worker",
+			want: &Config{
+				Name:        "function-worker",
 				AccountID:   "acc-123",
 				D1Databases: []D1Database{{Binding: "DB", DatabaseName: "my-db", DatabaseID: "db-id"}},
 			},
 		},
 		{
 			name:    "Promise 形式",
-			content: "export default Promise.resolve({ type: 'worker', name: 'promise-worker' })\n",
-			want:    &WranglerConfig{Name: "promise-worker"},
+			content: "export default Promise.resolve({ worker: Promise.resolve({ name: 'promise-worker' }) })\n",
+			want:    &Config{Name: "promise-worker"},
 		},
 		{
 			name: "stdout に書き込む設定",
 			content: `console.log('noise from the config')
-export default { type: 'worker', name: 'noisy-worker' }
+export default { worker: { name: 'noisy-worker' } }
 `,
-			want: &WranglerConfig{Name: "noisy-worker"},
+			want: &Config{Name: "noisy-worker"},
 		},
 		{
 			name: "イベントループを保持する設定",
 			content: `setInterval(() => {}, 100000)
-export default { type: 'worker', name: 'lingering-worker' }
+export default { worker: { name: 'lingering-worker' } }
 `,
-			want: &WranglerConfig{Name: "lingering-worker"},
+			want: &Config{Name: "lingering-worker"},
 		},
 		{
-			name:    "worker でない default export",
-			content: "export default { name: 'no-type' }\n",
-			wantErr: "cloudflare.config.ts: the default export must be a worker",
+			name: "Workflow を定義する設定",
+			content: `export default {
+  worker: {
+    name: 'workflow-worker',
+    exports: { MyWorkflow: { type: 'workflow', name: 'my-workflow' } },
+    env: { MY_WORKFLOW: { type: 'workflow', name: 'my-workflow', worker: 'workflow-worker', exportName: 'MyWorkflow' } },
+  },
+}
+`,
+			want: &Config{
+				Name:      "workflow-worker",
+				Workflows: []Workflow{{Binding: "MY_WORKFLOW", Name: "my-workflow", ClassName: "MyWorkflow"}},
+			},
+		},
+		{
+			name:    "containers だけの設定",
+			content: "export default { accountId: 'acc-123', containers: [{ name: 'app', image: { dockerfile: './Dockerfile' } }] }\n",
+			want:    &Config{AccountID: "acc-123"},
+		},
+		{
+			name:    "worker が null の設定",
+			content: "export default { worker: () => null }\n",
+			want:    &Config{},
+		},
+		{
+			name:    "default export のない設定",
+			content: "export const worker = { name: 'named-only' }\n",
+			wantErr: "cloudflare.config.ts: the config has no default export",
+		},
+		{
+			name:    "オブジェクトでない default export",
+			content: "export default 'not-a-config'\n",
+			wantErr: "cloudflare.config.ts: the default export must be an object",
+		},
+		{
+			name:    "オブジェクトでない worker",
+			content: "export default { worker: () => 'not-a-worker' }\n",
+			wantErr: "cloudflare.config.ts: the worker must be an object",
+		},
+		{
+			name:    "文字列でない accountId",
+			content: "export default { accountId: 123, worker: { name: 'w' } }\n",
+			wantErr: "cloudflare.config.ts: accountId must be a string",
 		},
 		{
 			name:    "型ストリップできない TypeScript 構文",
-			content: "enum Mode { Prod }\nexport default { type: 'worker', name: `w-${Mode.Prod}` }\n",
+			content: "enum Mode { Prod }\nexport default { worker: { name: `w-${Mode.Prod}` } }\n",
 			wantErr: "cloudflare.config.ts:",
 		},
 		{
@@ -112,82 +152,96 @@ export default { type: 'worker', name: 'lingering-worker' }
 
 			configPath := writeFixture(t, tt.content, tt.files)
 
-			got, err := LoadWranglerConfig(configPath)
+			got, err := Load(Options{Path: configPath})
 
 			if tt.wantErr != "" {
 				if err == nil {
-					t.Fatalf("LoadWranglerConfig() error = nil, want an error containing %q", tt.wantErr)
+					t.Fatalf("Load() error = nil, want an error containing %q", tt.wantErr)
 				}
 				if !strings.Contains(err.Error(), tt.wantErr) {
-					t.Errorf("LoadWranglerConfig() error = %v, want it to contain %q", err, tt.wantErr)
+					t.Errorf("Load() error = %v, want it to contain %q", err, tt.wantErr)
 				}
 				return
 			}
 
 			if err != nil {
-				t.Fatalf("LoadWranglerConfig() error = %v", err)
+				t.Fatalf("Load() error = %v", err)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("LoadWranglerConfig()\n got = %+v\nwant = %+v", got, tt.want)
+			want := *tt.want
+			want.Path = configPath
+			if !reflect.DeepEqual(got, &want) {
+				t.Errorf("Load()\n got = %+v\nwant = %+v", got, &want)
 			}
 		})
 	}
 }
 
-func TestLoadWranglerConfig_TypeScriptMode(t *testing.T) {
+func TestLoad_TypeScriptMode(t *testing.T) {
 	requireNode(t)
 	t.Setenv("CLOUDFLARE_ENV", "staging")
 
-	content := "export default (ctx) => ({ type: 'worker', name: `worker-${ctx.mode ?? 'none'}` })\n"
+	content := "export default (ctx) => ({ worker: { name: `worker-${ctx.mode ?? 'none'}-${ctx.isPreview}` } })\n"
 	configPath := writeFixture(t, content, nil)
 
-	cfg, err := LoadWranglerConfig(configPath)
-	if err != nil {
-		t.Fatalf("LoadWranglerConfig() error = %v", err)
+	tests := []struct {
+		name string
+		mode string
+		want string
+	}{
+		{name: "mode の指定", mode: "production", want: "worker-production-false"},
+		{name: "mode の未指定", mode: "", want: "worker-none-false"},
 	}
 
-	if cfg.Name != "worker-staging" {
-		t.Errorf("Name = %q, want %q", cfg.Name, "worker-staging")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg, err := Load(Options{Path: configPath, Mode: tt.mode})
+			if err != nil {
+				t.Fatalf("Load() error = %v", err)
+			}
+
+			if cfg.Name != tt.want {
+				t.Errorf("Name = %q, want %q", cfg.Name, tt.want)
+			}
+		})
 	}
 }
 
-func TestLoadWranglerConfig_TypeScriptWithoutNode(t *testing.T) {
+func TestLoad_TypeScriptWithoutNode(t *testing.T) {
 	t.Setenv("PATH", "")
 
-	configPath := writeFixture(t, "export default { type: 'worker', name: 'x' }\n", nil)
+	configPath := writeFixture(t, "export default { worker: { name: 'x' } }\n", nil)
 
-	_, err := LoadWranglerConfig(configPath)
+	_, err := Load(Options{Path: configPath})
 
 	if err == nil || !strings.Contains(err.Error(), "node not found in PATH") {
-		t.Errorf("LoadWranglerConfig() error = %v, want a node-not-found error", err)
+		t.Errorf("Load() error = %v, want a node-not-found error", err)
 	}
 }
 
-func TestLoadWranglerConfig_TypeScriptNotFound(t *testing.T) {
+func TestLoad_TypeScriptNotFound(t *testing.T) {
 	t.Parallel()
 
 	configPath := filepath.Join(t.TempDir(), "cloudflare.config.ts")
 
-	_, err := LoadWranglerConfig(configPath)
+	_, err := Load(Options{Path: configPath})
 
 	if err == nil || !strings.Contains(err.Error(), "failed to find config file") {
-		t.Errorf("LoadWranglerConfig() error = %v, want a not-found error", err)
+		t.Errorf("Load() error = %v, want a not-found error", err)
 	}
 }
 
-func TestToWranglerConfig(t *testing.T) {
+func TestToConfig(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name   string
 		loaded string
-		want   *WranglerConfig
+		want   *Config
 	}{
 		{
 			name: "全フィールドの取り込み",
 			loaded: `{
 				"worker": {
-					"type": "worker",
 					"name": "my-worker",
 					"observability": {"enabled": true},
 					"triggers": [
@@ -208,9 +262,9 @@ func TestToWranglerConfig(t *testing.T) {
 						"IMAGES": {"type": "images"}
 					}
 				},
-				"settings": {"type": "settings", "accountId": "acc-123"}
+				"accountId": "acc-123"
 			}`,
-			want: &WranglerConfig{
+			want: &Config{
 				Name:                "my-worker",
 				AccountID:           "acc-123",
 				Observability:       &ObservabilityConfig{Enabled: true},
@@ -231,7 +285,6 @@ func TestToWranglerConfig(t *testing.T) {
 			name: "URL に必要な値が欠けた binding の除外",
 			loaded: `{
 				"worker": {
-					"type": "worker",
 					"name": "my-worker",
 					"env": {
 						"DB": {"type": "d1", "name": "id-less-db"},
@@ -241,13 +294,12 @@ func TestToWranglerConfig(t *testing.T) {
 					}
 				}
 			}`,
-			want: &WranglerConfig{Name: "my-worker"},
+			want: &Config{Name: "my-worker"},
 		},
 		{
 			name: "未対応 binding の無視",
 			loaded: `{
 				"worker": {
-					"type": "worker",
 					"name": "my-worker",
 					"env": {
 						"AI": {"type": "ai"},
@@ -257,7 +309,7 @@ func TestToWranglerConfig(t *testing.T) {
 					}
 				}
 			}`,
-			want: &WranglerConfig{
+			want: &Config{
 				Name:        "my-worker",
 				D1Databases: []D1Database{{Binding: "DB", DatabaseID: "db-id"}},
 			},
@@ -266,7 +318,6 @@ func TestToWranglerConfig(t *testing.T) {
 			name: "同じ種別の binding の名前順",
 			loaded: `{
 				"worker": {
-					"type": "worker",
 					"name": "my-worker",
 					"env": {
 						"ZED": {"type": "d1", "id": "zed-id"},
@@ -275,7 +326,7 @@ func TestToWranglerConfig(t *testing.T) {
 					}
 				}
 			}`,
-			want: &WranglerConfig{
+			want: &Config{
 				Name: "my-worker",
 				D1Databases: []D1Database{
 					{Binding: "ALPHA", DatabaseID: "alpha-id"},
@@ -286,8 +337,41 @@ func TestToWranglerConfig(t *testing.T) {
 		},
 		{
 			name:   "scheduled trigger のない設定",
-			loaded: `{"worker": {"type": "worker", "name": "my-worker", "triggers": [{"type": "fetch"}]}}`,
-			want:   &WranglerConfig{Name: "my-worker"},
+			loaded: `{"worker": {"name": "my-worker", "triggers": [{"type": "fetch"}]}}`,
+			want:   &Config{Name: "my-worker"},
+		},
+		{
+			name: "binding と exports からの Workflow の収集",
+			loaded: `{
+				"worker": {
+					"name": "my-worker",
+					"env": {
+						"REMOTE": {"type": "workflow", "name": "remote-workflow", "worker": "other-worker", "exportName": "RemoteWorkflow"},
+						"LOCAL": {"type": "workflow", "name": "local-workflow", "worker": "my-worker", "exportName": "LocalWorkflow"},
+						"DUPLICATE": {"type": "workflow", "name": "local-workflow", "worker": "my-worker", "exportName": "LocalWorkflow"},
+						"NAMELESS": {"type": "workflow", "worker": "my-worker", "exportName": "NamelessWorkflow"}
+					},
+					"exports": {
+						"LocalWorkflow": {"type": "workflow", "name": "local-workflow"},
+						"UnboundWorkflow": {"type": "workflow", "name": "unbound-workflow"},
+						"Counter": {"type": "durable-object", "storage": "sqlite"},
+						"Api": {"type": "worker"}
+					}
+				}
+			}`,
+			want: &Config{
+				Name: "my-worker",
+				Workflows: []Workflow{
+					{Binding: "DUPLICATE", Name: "local-workflow", ClassName: "LocalWorkflow"},
+					{Binding: "REMOTE", Name: "remote-workflow", ClassName: "RemoteWorkflow"},
+					{Name: "unbound-workflow", ClassName: "UnboundWorkflow"},
+				},
+			},
+		},
+		{
+			name:   "worker のない設定",
+			loaded: `{"accountId": "acc-123"}`,
+			want:   &Config{AccountID: "acc-123"},
 		},
 	}
 
@@ -300,28 +384,12 @@ func TestToWranglerConfig(t *testing.T) {
 				t.Fatalf("テスト入力のパースに失敗: %v", err)
 			}
 
-			got := toWranglerConfig(loaded.Worker, loaded.Settings)
+			got := toConfig(loaded.Worker, loaded.AccountID)
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("toWranglerConfig()\n got = %+v\nwant = %+v", got, tt.want)
+				t.Errorf("toConfig()\n got = %+v\nwant = %+v", got, tt.want)
 			}
 		})
-	}
-}
-
-func TestFindWranglerConfig_Priority(t *testing.T) {
-	dir := t.TempDir()
-	for _, name := range []string{"cloudflare.config.ts", "wrangler.jsonc"} {
-		if err := os.WriteFile(filepath.Join(dir, name), []byte("{}"), 0o644); err != nil {
-			t.Fatalf("テスト設定ファイルの書き込みに失敗: %v", err)
-		}
-	}
-	t.Chdir(dir)
-
-	got := findWranglerConfig()
-
-	if got != "cloudflare.config.ts" {
-		t.Errorf("findWranglerConfig() = %q, want %q", got, "cloudflare.config.ts")
 	}
 }
 
@@ -329,15 +397,7 @@ func writeFixture(t *testing.T, content string, files map[string]string) string 
 	t.Helper()
 
 	dir := t.TempDir()
-	for name, body := range files {
-		path := filepath.Join(dir, filepath.FromSlash(name))
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			t.Fatalf("テスト用ディレクトリの作成に失敗: %v", err)
-		}
-		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
-			t.Fatalf("テスト用ファイルの書き込みに失敗: %v", err)
-		}
-	}
+	writeFiles(t, dir, files)
 
 	configPath := filepath.Join(dir, "cloudflare.config.ts")
 	if err := os.WriteFile(configPath, []byte(content), 0o644); err != nil {

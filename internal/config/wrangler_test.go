@@ -245,6 +245,25 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で stream キーの Pipelines を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "pipeline-worker",
+				"pipelines": [
+					{"binding": "MY_PIPELINE", "stream": "my-stream"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Pipelines) != 1 {
+					t.Errorf("len(Pipelines) = %d, want 1", len(cfg.Pipelines))
+					return
+				}
+				if cfg.Pipelines[0].Stream != "my-stream" {
+					t.Errorf("Pipelines[0].Stream = %q, want %q", cfg.Pipelines[0].Stream, "my-stream")
+				}
+			},
+		},
+		{
 			name:     "JSON で Vectorize を含む設定",
 			filename: "wrangler.json",
 			content: `{

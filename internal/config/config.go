@@ -81,6 +81,7 @@ type D1Database struct {
 
 type Pipeline struct {
 	Binding  string `json:"binding" toml:"binding"`
+	Stream   string `json:"stream" toml:"stream"`
 	Pipeline string `json:"pipeline" toml:"pipeline"`
 }
 

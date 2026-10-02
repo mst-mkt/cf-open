@@ -142,13 +142,17 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 
 	// Pipelines
 	for _, pipeline := range cfg.Pipelines {
-		pipelineURL := fmt.Sprintf("pipelines/%s/overview", pipeline.Pipeline)
+		streamID := pipeline.Stream
+		if streamID == "" {
+			streamID = pipeline.Pipeline
+		}
+		streamURL := fmt.Sprintf("pipelines/streams/%s", streamID)
 		resources = append(resources, Resource{
 			Type:        ResourceTypePipeline,
 			Name:        pipeline.Binding,
-			ID:          pipeline.Pipeline,
-			Description: fmt.Sprintf("Pipeline: %s", pipeline.Pipeline),
-			URL:         BuildDashboardURL(accountID, pipelineURL, hasAccount),
+			ID:          streamID,
+			Description: fmt.Sprintf("Stream: %s", streamID),
+			URL:         BuildDashboardURL(accountID, streamURL, hasAccount),
 		})
 	}
 

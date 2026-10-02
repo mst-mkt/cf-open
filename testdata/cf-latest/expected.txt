@@ -9,7 +9,7 @@ https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/vpc/service
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/r2/default/buckets/my-bucket
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/kv/namespaces/kv-id/metrics
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/workers/d1/databases/db-id/metrics
-https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/pipelines/my-pipeline/overview
+https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/pipelines/streams/my-pipeline
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/ai/vectorize/my-index
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/secrets-store/store-id
 https://dash.cloudflare.com/0123456789abcdef0123456789abcdef/images

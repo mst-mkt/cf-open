@@ -158,12 +158,24 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			name: "Pipeline",
 			config: &config.Config{
 				Pipelines: []config.Pipeline{
-					{Binding: "MY_PIPELINE", Pipeline: "my-pipeline"},
+					{Binding: "MY_PIPELINE", Stream: "my-stream"},
 				},
 			},
 			wantTypes: []ResourceType{ResourceTypePipeline},
 			wantURLs: map[ResourceType]string{
-				ResourceTypePipeline: "https://dash.cloudflare.com/acc/pipelines/my-pipeline/overview",
+				ResourceTypePipeline: "https://dash.cloudflare.com/acc/pipelines/streams/my-stream",
+			},
+		},
+		{
+			name: "Pipeline - 非推奨の pipeline キー",
+			config: &config.Config{
+				Pipelines: []config.Pipeline{
+					{Binding: "MY_PIPELINE", Pipeline: "my-stream"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypePipeline},
+			wantURLs: map[ResourceType]string{
+				ResourceTypePipeline: "https://dash.cloudflare.com/acc/pipelines/streams/my-stream",
 			},
 		},
 		{

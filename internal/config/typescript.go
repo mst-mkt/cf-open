@@ -48,12 +48,13 @@ type workerExport struct {
 }
 
 type workerBinding struct {
-	Type       string `json:"type"`
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	StoreID    string `json:"storeId"`
-	SecretName string `json:"secretName"`
-	ExportName string `json:"exportName"`
+	Type         string `json:"type"`
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Jurisdiction string `json:"jurisdiction"`
+	StoreID      string `json:"storeId"`
+	SecretName   string `json:"secretName"`
+	ExportName   string `json:"exportName"`
 }
 
 func loadTypeScriptConfig(configPath, mode string) (*Config, error) {
@@ -168,7 +169,7 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 			return VPCService{Binding: binding, ServiceID: service.ID}, service.ID != ""
 		}),
 		R2Buckets: collectBindings(env, "r2", func(binding string, bucket workerBinding) (R2Bucket, bool) {
-			return R2Bucket{Binding: binding, BucketName: bucket.Name}, bucket.Name != ""
+			return R2Bucket{Binding: binding, BucketName: bucket.Name, Jurisdiction: bucket.Jurisdiction}, bucket.Name != ""
 		}),
 		KVNamespaces: collectBindings(env, "kv", func(binding string, kv workerBinding) (KVNamespace, bool) {
 			return KVNamespace{Binding: binding, ID: kv.ID}, kv.ID != ""

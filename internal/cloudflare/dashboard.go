@@ -18,8 +18,22 @@ func BuildDashboardURL(accountID, path string, hasAccount bool) string {
 func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount bool) []Resource {
 	var resources []Resource
 
+	isPages := cfg.PagesBuildOutputDir != ""
+
+	// Pages
+	if cfg.Name != "" && isPages {
+		pagesURL := fmt.Sprintf("pages/view/%s", cfg.Name)
+		resources = append(resources, Resource{
+			Type:        ResourceTypePages,
+			Name:        cfg.Name,
+			ID:          cfg.Name,
+			Description: fmt.Sprintf("Pages: %s", cfg.Name),
+			URL:         BuildDashboardURL(accountID, pagesURL, hasAccount),
+		})
+	}
+
 	// Workers
-	if cfg.Name != "" {
+	if cfg.Name != "" && !isPages {
 		workerURL := fmt.Sprintf("workers/services/view/%s/production", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeWorker,
@@ -31,7 +45,7 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 	}
 
 	// Workers Observability
-	if cfg.Name != "" && cfg.Observability != nil {
+	if cfg.Name != "" && !isPages && cfg.Observability != nil {
 		observabilityURL := fmt.Sprintf("workers/services/view/%s/production/observability", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeObservability,
@@ -43,7 +57,7 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 	}
 
 	// Workers Cron Triggers
-	if cfg.Name != "" && cfg.Triggers != nil && len(cfg.Triggers.Crons) > 0 {
+	if cfg.Name != "" && !isPages && cfg.Triggers != nil && len(cfg.Triggers.Crons) > 0 {
 		cronURL := fmt.Sprintf("workers/services/view/%s/production/settings#trigger-events", cfg.Name)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeCronTriggers,
@@ -55,17 +69,16 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 	}
 
 	// Queues
-	if cfg.Queues != nil {
-		for _, producer := range cfg.Queues.Producers {
-			queueURL := fmt.Sprintf("workers/queues/%s/metrics", producer.Queue)
-			resources = append(resources, Resource{
-				Type:        ResourceTypeQueue,
-				Name:        producer.Binding,
-				ID:          producer.Queue,
-				Description: fmt.Sprintf("Queue: %s", producer.Queue),
-				URL:         BuildDashboardURL(accountID, queueURL, hasAccount),
-			})
-		}
+	// The detail page is addressed by queue ID, not the name in the config, so open the list.
+	if cfg.Queues != nil && len(cfg.Queues.Producers) > 0 {
+		queueURL := "workers/queues"
+		resources = append(resources, Resource{
+			Type:        ResourceTypeQueue,
+			Name:        "queues",
+			ID:          "queues",
+			Description: "Queues",
+			URL:         BuildDashboardURL(accountID, queueURL, hasAccount),
+		})
 	}
 
 	// Workflows
@@ -80,33 +93,37 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
-	// Browser Rendering
+	// Browser Run
 	if cfg.Browser != nil && cfg.Browser.Binding != "" {
-		browserURL := "workers/browser-rendering/overview"
+		browserURL := "workers/browser-run"
 		resources = append(resources, Resource{
-			Type:        ResourceTypeBrowserRendering,
+			Type:        ResourceTypeBrowserRun,
 			Name:        cfg.Browser.Binding,
-			ID:          "browser-rendering",
-			Description: "Browser Rendering",
+			ID:          "browser-run",
+			Description: "Browser Run",
 			URL:         BuildDashboardURL(accountID, browserURL, hasAccount),
 		})
 	}
 
 	// VPC
-	if len(cfg.VPCServices) > 0 {
-		vpcURL := "workers/vpc/services"
+	for _, service := range cfg.VPCServices {
+		vpcURL := fmt.Sprintf("workers/vpc/services/%s", service.ServiceID)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeVPC,
-			Name:        "vpc",
-			ID:          "vpc",
-			Description: "VPC Services",
+			Name:        service.Binding,
+			ID:          service.ServiceID,
+			Description: fmt.Sprintf("VPC Service: %s", service.ServiceID),
 			URL:         BuildDashboardURL(accountID, vpcURL, hasAccount),
 		})
 	}
 
 	// R2 Object Storage
 	for _, bucket := range cfg.R2Buckets {
-		r2URL := fmt.Sprintf("r2/default/buckets/%s", bucket.BucketName)
+		jurisdiction := bucket.Jurisdiction
+		if jurisdiction == "" {
+			jurisdiction = "default"
+		}
+		r2URL := fmt.Sprintf("r2/%s/buckets/%s", jurisdiction, bucket.BucketName)
 		resources = append(resources, Resource{
 			Type:        ResourceTypeR2,
 			Name:        bucket.Binding,
@@ -142,13 +159,17 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 
 	// Pipelines
 	for _, pipeline := range cfg.Pipelines {
-		pipelineURL := fmt.Sprintf("pipelines/%s/overview", pipeline.Pipeline)
+		streamID := pipeline.Stream
+		if streamID == "" {
+			streamID = pipeline.Pipeline
+		}
+		streamURL := fmt.Sprintf("pipelines/streams/%s", streamID)
 		resources = append(resources, Resource{
 			Type:        ResourceTypePipeline,
 			Name:        pipeline.Binding,
-			ID:          pipeline.Pipeline,
-			Description: fmt.Sprintf("Pipeline: %s", pipeline.Pipeline),
-			URL:         BuildDashboardURL(accountID, pipelineURL, hasAccount),
+			ID:          streamID,
+			Description: fmt.Sprintf("Stream: %s", streamID),
+			URL:         BuildDashboardURL(accountID, streamURL, hasAccount),
 		})
 	}
 

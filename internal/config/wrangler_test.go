@@ -59,6 +59,19 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Pages の設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "my-project",
+				"pages_build_output_dir": "./dist"
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.PagesBuildOutputDir != "./dist" {
+					t.Errorf("PagesBuildOutputDir = %q, want %q", cfg.PagesBuildOutputDir, "./dist")
+				}
+			},
+		},
+		{
 			name:     "JSON で Observability を含む設定",
 			filename: "wrangler.json",
 			content: `{
@@ -191,6 +204,25 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で jurisdiction 付きの R2 バケットを含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "r2-worker",
+				"r2_buckets": [
+					{"binding": "BUCKET", "bucket_name": "my-bucket", "jurisdiction": "eu"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.R2Buckets) != 1 {
+					t.Errorf("len(R2Buckets) = %d, want 1", len(cfg.R2Buckets))
+					return
+				}
+				if cfg.R2Buckets[0].Jurisdiction != "eu" {
+					t.Errorf("R2Buckets[0].Jurisdiction = %q, want %q", cfg.R2Buckets[0].Jurisdiction, "eu")
+				}
+			},
+		},
+		{
 			name:     "JSON で KV namespace を含む設定",
 			filename: "wrangler.json",
 			content: `{
@@ -241,6 +273,25 @@ compatibility_date = "2024-01-01"
 				}
 				if cfg.Pipelines[0].Pipeline != "my-pipeline" {
 					t.Errorf("Pipelines[0].Pipeline = %q, want %q", cfg.Pipelines[0].Pipeline, "my-pipeline")
+				}
+			},
+		},
+		{
+			name:     "JSON で stream キーの Pipelines を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "pipeline-worker",
+				"pipelines": [
+					{"binding": "MY_PIPELINE", "stream": "my-stream"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Pipelines) != 1 {
+					t.Errorf("len(Pipelines) = %d, want 1", len(cfg.Pipelines))
+					return
+				}
+				if cfg.Pipelines[0].Stream != "my-stream" {
+					t.Errorf("Pipelines[0].Stream = %q, want %q", cfg.Pipelines[0].Stream, "my-stream")
 				}
 			},
 		},

@@ -251,7 +251,7 @@ func TestToConfig(t *testing.T) {
 					],
 					"env": {
 						"DB": {"type": "d1", "name": "my-db", "id": "db-id"},
-						"BUCKET": {"type": "r2", "name": "my-bucket"},
+						"BUCKET": {"type": "r2", "name": "my-bucket", "jurisdiction": "eu"},
 						"CACHE": {"type": "kv", "id": "kv-id"},
 						"QUEUE": {"type": "queue", "name": "my-queue"},
 						"INDEX": {"type": "vectorize", "name": "my-index"},
@@ -272,7 +272,7 @@ func TestToConfig(t *testing.T) {
 				Queues:              &QueuesConfig{Producers: []QueueProducer{{Binding: "QUEUE", Queue: "my-queue"}}},
 				Browser:             &BrowserConfig{Binding: "BROWSER"},
 				VPCServices:         []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
-				R2Buckets:           []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket"}},
+				R2Buckets:           []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
 				KVNamespaces:        []KVNamespace{{Binding: "CACHE", ID: "kv-id"}},
 				D1Databases:         []D1Database{{Binding: "DB", DatabaseName: "my-db", DatabaseID: "db-id"}},
 				Pipelines:           []Pipeline{{Binding: "PIPE", Pipeline: "my-pipeline"}},

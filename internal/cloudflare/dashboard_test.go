@@ -69,6 +69,28 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Pages",
+			config: &config.Config{
+				Name:                "my-project",
+				PagesBuildOutputDir: "./dist",
+			},
+			wantTypes: []ResourceType{ResourceTypePages},
+			wantURLs: map[ResourceType]string{
+				ResourceTypePages: "https://dash.cloudflare.com/acc/pages/view/my-project",
+			},
+		},
+		{
+			name: "Pages - Observability と Cron Triggers は表示しない",
+			config: &config.Config{
+				Name:                "my-project",
+				PagesBuildOutputDir: "./dist",
+				Observability:       &config.ObservabilityConfig{Enabled: true},
+				Triggers:            &config.TriggersConfig{Crons: []string{"0 * * * *"}},
+			},
+			wantTypes: []ResourceType{ResourceTypePages},
+			wantURLs:  nil,
+		},
+		{
 			name: "Worker + Observability",
 			config: &config.Config{
 				Name:          "my-worker",
@@ -117,6 +139,18 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "R2 Bucket - jurisdiction 付き",
+			config: &config.Config{
+				R2Buckets: []config.R2Bucket{
+					{Binding: "MY_BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeR2},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeR2: "https://dash.cloudflare.com/acc/r2/eu/buckets/my-bucket",
+			},
+		},
+		{
 			name: "Queue",
 			config: &config.Config{
 				Queues: &config.QueuesConfig{
@@ -127,7 +161,22 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 			wantTypes: []ResourceType{ResourceTypeQueue},
 			wantURLs: map[ResourceType]string{
-				ResourceTypeQueue: "https://dash.cloudflare.com/acc/workers/queues/my-queue/metrics",
+				ResourceTypeQueue: "https://dash.cloudflare.com/acc/workers/queues",
+			},
+		},
+		{
+			name: "Queue - 複数の queue をまとめる",
+			config: &config.Config{
+				Queues: &config.QueuesConfig{
+					Producers: []config.QueueProducer{
+						{Binding: "QUEUE1", Queue: "queue-1"},
+						{Binding: "QUEUE2", Queue: "queue-2"},
+					},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeQueue},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeQueue: "https://dash.cloudflare.com/acc/workers/queues",
 			},
 		},
 		{
@@ -158,12 +207,24 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			name: "Pipeline",
 			config: &config.Config{
 				Pipelines: []config.Pipeline{
-					{Binding: "MY_PIPELINE", Pipeline: "my-pipeline"},
+					{Binding: "MY_PIPELINE", Stream: "my-stream"},
 				},
 			},
 			wantTypes: []ResourceType{ResourceTypePipeline},
 			wantURLs: map[ResourceType]string{
-				ResourceTypePipeline: "https://dash.cloudflare.com/acc/pipelines/my-pipeline/overview",
+				ResourceTypePipeline: "https://dash.cloudflare.com/acc/pipelines/streams/my-stream",
+			},
+		},
+		{
+			name: "Pipeline - 非推奨の pipeline キー",
+			config: &config.Config{
+				Pipelines: []config.Pipeline{
+					{Binding: "MY_PIPELINE", Pipeline: "my-stream"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypePipeline},
+			wantURLs: map[ResourceType]string{
+				ResourceTypePipeline: "https://dash.cloudflare.com/acc/pipelines/streams/my-stream",
 			},
 		},
 		{
@@ -192,13 +253,13 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "Browser Rendering",
+			name: "Browser Run",
 			config: &config.Config{
 				Browser: &config.BrowserConfig{Binding: "MY_BROWSER"},
 			},
-			wantTypes: []ResourceType{ResourceTypeBrowserRendering},
+			wantTypes: []ResourceType{ResourceTypeBrowserRun},
 			wantURLs: map[ResourceType]string{
-				ResourceTypeBrowserRendering: "https://dash.cloudflare.com/acc/workers/browser-rendering/overview",
+				ResourceTypeBrowserRun: "https://dash.cloudflare.com/acc/workers/browser-run",
 			},
 		},
 		{
@@ -220,7 +281,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 			wantTypes: []ResourceType{ResourceTypeVPC},
 			wantURLs: map[ResourceType]string{
-				ResourceTypeVPC: "https://dash.cloudflare.com/acc/workers/vpc/services",
+				ResourceTypeVPC: "https://dash.cloudflare.com/acc/workers/vpc/services/vpc-id",
 			},
 		},
 		{
@@ -273,7 +334,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeCronTriggers,
 				ResourceTypeQueue,
 				ResourceTypeWorkflow,
-				ResourceTypeBrowserRendering,
+				ResourceTypeBrowserRun,
 				ResourceTypeVPC,
 				ResourceTypeR2,
 				ResourceTypeKV,

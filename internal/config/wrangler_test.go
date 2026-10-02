@@ -130,6 +130,31 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Queue consumer を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "queue-worker",
+				"queues": {
+					"consumers": [
+						{"queue": "my-queue"}
+					]
+				}
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if cfg.Queues == nil {
+					t.Error("Queues is nil")
+					return
+				}
+				if len(cfg.Queues.Consumers) != 1 {
+					t.Errorf("len(Queues.Consumers) = %d, want 1", len(cfg.Queues.Consumers))
+					return
+				}
+				if cfg.Queues.Consumers[0].Queue != "my-queue" {
+					t.Errorf("Queues.Consumers[0].Queue = %q, want %q", cfg.Queues.Consumers[0].Queue, "my-queue")
+				}
+			},
+		},
+		{
 			name:     "JSON で Workflows を含む設定",
 			filename: "wrangler.json",
 			content: `{

@@ -42,11 +42,16 @@ type TriggersConfig struct {
 
 type QueuesConfig struct {
 	Producers []QueueProducer `json:"producers" toml:"producers"`
+	Consumers []QueueConsumer `json:"consumers" toml:"consumers"`
 }
 
 type QueueProducer struct {
 	Binding string `json:"binding" toml:"binding"`
 	Queue   string `json:"queue" toml:"queue"`
+}
+
+type QueueConsumer struct {
+	Queue string `json:"queue" toml:"queue"`
 }
 
 type Workflow struct {

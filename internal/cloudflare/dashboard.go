@@ -70,7 +70,7 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 
 	// Queues
 	// The detail page is addressed by queue ID, not the name in the config, so open the list.
-	if cfg.Queues != nil && len(cfg.Queues.Producers) > 0 {
+	if cfg.Queues != nil && (len(cfg.Queues.Producers) > 0 || len(cfg.Queues.Consumers) > 0) {
 		queueURL := "workers/queues"
 		resources = append(resources, Resource{
 			Type:        ResourceTypeQueue,

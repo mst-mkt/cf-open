@@ -180,6 +180,20 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Queue - consumer のみ",
+			config: &config.Config{
+				Queues: &config.QueuesConfig{
+					Consumers: []config.QueueConsumer{
+						{Queue: "my-queue"},
+					},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeQueue},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeQueue: "https://dash.cloudflare.com/acc/workers/queues",
+			},
+		},
+		{
 			name: "Workflow",
 			config: &config.Config{
 				Workflows: []config.Workflow{

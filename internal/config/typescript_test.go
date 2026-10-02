@@ -247,6 +247,7 @@ func TestToConfig(t *testing.T) {
 					"triggers": [
 						{"type": "scheduled", "schedule": "0 * * * *"},
 						{"type": "fetch"},
+						{"type": "queue", "name": "consumed-queue"},
 						{"type": "scheduled", "schedule": "0 0 * * *"}
 					],
 					"env": {
@@ -269,7 +270,7 @@ func TestToConfig(t *testing.T) {
 				AccountID:           "acc-123",
 				Observability:       &ObservabilityConfig{Enabled: true},
 				Triggers:            &TriggersConfig{Crons: []string{"0 * * * *", "0 0 * * *"}},
-				Queues:              &QueuesConfig{Producers: []QueueProducer{{Binding: "QUEUE", Queue: "my-queue"}}},
+				Queues:              &QueuesConfig{Producers: []QueueProducer{{Binding: "QUEUE", Queue: "my-queue"}}, Consumers: []QueueConsumer{{Queue: "consumed-queue"}}},
 				Browser:             &BrowserConfig{Binding: "BROWSER"},
 				VPCServices:         []VPCService{{Binding: "VPC", ServiceID: "vpc-id"}},
 				R2Buckets:           []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},

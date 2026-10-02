@@ -39,6 +39,7 @@ type workerDefinition struct {
 
 type workerTrigger struct {
 	Type     string `json:"type"`
+	Name     string `json:"name"`
 	Schedule string `json:"schedule"`
 }
 
@@ -160,7 +161,7 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		AccountID:     accountID,
 		Observability: worker.Observability,
 		Triggers:      cronTriggers(worker.Triggers),
-		Queues:        queuesConfig(env),
+		Queues:        queuesConfig(env, worker.Triggers),
 		Workflows:     workflows(worker),
 		Browser: firstBinding(env, "browser", func(binding string) BrowserConfig {
 			return BrowserConfig{Binding: binding}
@@ -245,16 +246,23 @@ func cronTriggers(triggers []workerTrigger) *TriggersConfig {
 	return &TriggersConfig{Crons: crons}
 }
 
-func queuesConfig(env map[string]workerBinding) *QueuesConfig {
+func queuesConfig(env map[string]workerBinding, triggers []workerTrigger) *QueuesConfig {
 	producers := collectBindings(env, "queue", func(binding string, queue workerBinding) (QueueProducer, bool) {
 		return QueueProducer{Binding: binding, Queue: queue.Name}, queue.Name != ""
 	})
 
-	if len(producers) == 0 {
+	var consumers []QueueConsumer
+	for _, trigger := range triggers {
+		if trigger.Type == "queue" && trigger.Name != "" {
+			consumers = append(consumers, QueueConsumer{Queue: trigger.Name})
+		}
+	}
+
+	if len(producers) == 0 && len(consumers) == 0 {
 		return nil
 	}
 
-	return &QueuesConfig{Producers: producers}
+	return &QueuesConfig{Producers: producers, Consumers: consumers}
 }
 
 func workflows(worker *workerDefinition) []Workflow {

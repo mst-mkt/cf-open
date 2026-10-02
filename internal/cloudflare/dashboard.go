@@ -170,6 +170,18 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
+	// Hyperdrive
+	for _, hyperdrive := range cfg.Hyperdrive {
+		hyperdriveURL := fmt.Sprintf("workers/hyperdrive/%s", hyperdrive.ID)
+		resources = append(resources, Resource{
+			Type:        ResourceTypeHyperdrive,
+			Name:        hyperdrive.Binding,
+			ID:          hyperdrive.ID,
+			Description: fmt.Sprintf("Hyperdrive: %s (%s)", hyperdrive.Binding, hyperdrive.ID),
+			URL:         BuildDashboardURL(accountID, hyperdriveURL, hasAccount),
+		})
+	}
+
 	// Pipelines
 	for _, pipeline := range cfg.Pipelines {
 		streamID := pipeline.Stream

@@ -27,6 +27,7 @@ type Config struct {
 	R2Buckets           []R2Bucket            `json:"r2_buckets" toml:"r2_buckets"`
 	KVNamespaces        []KVNamespace         `json:"kv_namespaces" toml:"kv_namespaces"`
 	D1Databases         []D1Database          `json:"d1_databases" toml:"d1_databases"`
+	Hyperdrive          []Hyperdrive          `json:"hyperdrive" toml:"hyperdrive"`
 	Pipelines           []Pipeline            `json:"pipelines" toml:"pipelines"`
 	Vectorize           []VectorizeIndex      `json:"vectorize" toml:"vectorize"`
 	SecretsStoreSecrets []SecretsStoreSecret  `json:"secrets_store_secrets" toml:"secrets_store_secrets"`
@@ -94,6 +95,11 @@ type D1Database struct {
 	Binding      string `json:"binding" toml:"binding"`
 	DatabaseName string `json:"database_name" toml:"database_name"`
 	DatabaseID   string `json:"database_id" toml:"database_id"`
+}
+
+type Hyperdrive struct {
+	Binding string `json:"binding" toml:"binding"`
+	ID      string `json:"id" toml:"id"`
 }
 
 type Pipeline struct {

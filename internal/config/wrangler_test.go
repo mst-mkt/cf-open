@@ -308,6 +308,25 @@ compatibility_date = "2024-01-01"
 			},
 		},
 		{
+			name:     "JSON で Hyperdrive を含む設定",
+			filename: "wrangler.json",
+			content: `{
+				"name": "hyperdrive-worker",
+				"hyperdrive": [
+					{"binding": "HYPERDRIVE", "id": "hd-123"}
+				]
+			}`,
+			validate: func(t *testing.T, cfg *Config) {
+				if len(cfg.Hyperdrive) != 1 {
+					t.Errorf("len(Hyperdrive) = %d, want 1", len(cfg.Hyperdrive))
+					return
+				}
+				if cfg.Hyperdrive[0].ID != "hd-123" {
+					t.Errorf("Hyperdrive[0].ID = %q, want %q", cfg.Hyperdrive[0].ID, "hd-123")
+				}
+			},
+		},
+		{
 			name:     "JSON で Pipelines を含む設定",
 			filename: "wrangler.json",
 			content: `{

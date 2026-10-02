@@ -127,6 +127,18 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
+			name: "Hyperdrive",
+			config: &config.Config{
+				Hyperdrive: []config.Hyperdrive{
+					{Binding: "MY_HYPERDRIVE", ID: "hd-id"},
+				},
+			},
+			wantTypes: []ResourceType{ResourceTypeHyperdrive},
+			wantURLs: map[ResourceType]string{
+				ResourceTypeHyperdrive: "https://dash.cloudflare.com/acc/workers/hyperdrive/hd-id",
+			},
+		},
+		{
 			name: "R2 Bucket",
 			config: &config.Config{
 				R2Buckets: []config.R2Bucket{
@@ -344,6 +356,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				Observability: &config.ObservabilityConfig{Enabled: true},
 				KVNamespaces:  []config.KVNamespace{{Binding: "KV", ID: "kv-id"}},
 				D1Databases:   []config.D1Database{{Binding: "DB", DatabaseName: "db", DatabaseID: "d1-id"}},
+				Hyperdrive:    []config.Hyperdrive{{Binding: "HD", ID: "hd-id"}},
 				R2Buckets:     []config.R2Bucket{{Binding: "R2", BucketName: "bucket"}},
 				Queues:        &config.QueuesConfig{Producers: []config.QueueProducer{{Binding: "Q", Queue: "queue"}}},
 				Workflows:     []config.Workflow{{Binding: "WF", Name: "workflow", ClassName: "WF"}},
@@ -372,6 +385,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeR2,
 				ResourceTypeKV,
 				ResourceTypeD1,
+				ResourceTypeHyperdrive,
 				ResourceTypePipeline,
 				ResourceTypeVectorize,
 				ResourceTypeSecretsStore,

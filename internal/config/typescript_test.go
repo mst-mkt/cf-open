@@ -254,6 +254,7 @@ func TestToConfig(t *testing.T) {
 						"DB": {"type": "d1", "name": "my-db", "id": "db-id"},
 						"BUCKET": {"type": "r2", "name": "my-bucket", "jurisdiction": "eu"},
 						"CACHE": {"type": "kv", "id": "kv-id"},
+						"HYPERDRIVE": {"type": "hyperdrive", "id": "hd-id"},
 						"QUEUE": {"type": "queue", "name": "my-queue"},
 						"INDEX": {"type": "vectorize", "name": "my-index"},
 						"PIPE": {"type": "pipeline", "name": "my-pipeline"},
@@ -278,6 +279,7 @@ func TestToConfig(t *testing.T) {
 				R2Buckets:           []R2Bucket{{Binding: "BUCKET", BucketName: "my-bucket", Jurisdiction: "eu"}},
 				KVNamespaces:        []KVNamespace{{Binding: "CACHE", ID: "kv-id"}},
 				D1Databases:         []D1Database{{Binding: "DB", DatabaseName: "my-db", DatabaseID: "db-id"}},
+				Hyperdrive:          []Hyperdrive{{Binding: "HYPERDRIVE", ID: "hd-id"}},
 				Pipelines:           []Pipeline{{Binding: "PIPE", Pipeline: "my-pipeline"}},
 				Vectorize:           []VectorizeIndex{{Binding: "INDEX", IndexName: "my-index"}},
 				SecretsStoreSecrets: []SecretsStoreSecret{{Binding: "SECRET", StoreID: "store-id", SecretName: "my-secret"}},
@@ -321,7 +323,6 @@ func TestToConfig(t *testing.T) {
 					"name": "my-worker",
 					"env": {
 						"AI": {"type": "ai"},
-						"HYPERDRIVE": {"type": "hyperdrive", "id": "hd-id"},
 						"DB": {"type": "d1", "id": "db-id"}
 					}
 				}

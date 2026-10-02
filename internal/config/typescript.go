@@ -179,6 +179,9 @@ func toConfig(worker *workerDefinition, accountID string) *Config {
 		D1Databases: collectBindings(env, "d1", func(binding string, db workerBinding) (D1Database, bool) {
 			return D1Database{Binding: binding, DatabaseName: db.Name, DatabaseID: db.ID}, db.ID != ""
 		}),
+		Hyperdrive: collectBindings(env, "hyperdrive", func(binding string, hyperdrive workerBinding) (Hyperdrive, bool) {
+			return Hyperdrive{Binding: binding, ID: hyperdrive.ID}, hyperdrive.ID != ""
+		}),
 		Pipelines: collectBindings(env, "pipeline", func(binding string, pipeline workerBinding) (Pipeline, bool) {
 			return Pipeline{Binding: binding, Pipeline: pipeline.Name}, pipeline.Name != ""
 		}),

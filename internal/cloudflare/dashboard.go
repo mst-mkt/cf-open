@@ -80,14 +80,14 @@ func GetResourcesFromConfig(cfg *config.Config, accountID string, hasAccount boo
 		})
 	}
 
-	// Browser Rendering
+	// Browser Run
 	if cfg.Browser != nil && cfg.Browser.Binding != "" {
-		browserURL := "workers/browser-rendering/overview"
+		browserURL := "workers/browser-run"
 		resources = append(resources, Resource{
-			Type:        ResourceTypeBrowserRendering,
+			Type:        ResourceTypeBrowserRun,
 			Name:        cfg.Browser.Binding,
-			ID:          "browser-rendering",
-			Description: "Browser Rendering",
+			ID:          "browser-run",
+			Description: "Browser Run",
 			URL:         BuildDashboardURL(accountID, browserURL, hasAccount),
 		})
 	}

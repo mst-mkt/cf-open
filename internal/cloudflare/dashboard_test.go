@@ -192,13 +192,13 @@ func TestGetResourcesFromConfig(t *testing.T) {
 			},
 		},
 		{
-			name: "Browser Rendering",
+			name: "Browser Run",
 			config: &config.Config{
 				Browser: &config.BrowserConfig{Binding: "MY_BROWSER"},
 			},
-			wantTypes: []ResourceType{ResourceTypeBrowserRendering},
+			wantTypes: []ResourceType{ResourceTypeBrowserRun},
 			wantURLs: map[ResourceType]string{
-				ResourceTypeBrowserRendering: "https://dash.cloudflare.com/acc/workers/browser-rendering/overview",
+				ResourceTypeBrowserRun: "https://dash.cloudflare.com/acc/workers/browser-run",
 			},
 		},
 		{
@@ -273,7 +273,7 @@ func TestGetResourcesFromConfig(t *testing.T) {
 				ResourceTypeCronTriggers,
 				ResourceTypeQueue,
 				ResourceTypeWorkflow,
-				ResourceTypeBrowserRendering,
+				ResourceTypeBrowserRun,
 				ResourceTypeVPC,
 				ResourceTypeR2,
 				ResourceTypeKV,
